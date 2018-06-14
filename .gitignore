@@ -5,4 +5,5 @@
 _dev/
 _pprod/
 _prod/
+__ressource/
 wp-config.php
