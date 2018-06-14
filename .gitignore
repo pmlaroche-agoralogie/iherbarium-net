@@ -1,0 +1,8 @@
+.DS_Store
+.buildpath
+.project
+.settings/
+_dev/
+_pprod/
+_prod/
+wp-config.php
