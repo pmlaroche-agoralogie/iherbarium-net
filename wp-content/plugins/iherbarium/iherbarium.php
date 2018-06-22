@@ -38,6 +38,7 @@ class iHerbarium {
         $newRule = array('test/(.+)' => 'index.php?test='.$wp_rewrite->preg_index(1),
             'observation/data/(.+)' => 'index.php?idobs='.$wp_rewrite->preg_index(1),
             'observation/photo(.+)' => 'index.php?idphoto='.$wp_rewrite->preg_index(1),
+            'choix-dune-etiquette/herbier-support/(.+)' => 'index.php?herbier=true',
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -47,11 +48,14 @@ class iHerbarium {
         $qvars[] = 'test';
         $qvars[] = 'idobs';
         $qvars[] = 'idphoto';
+        $qvars[] = 'herbier';
         return $qvars;
     }
     function template_redirect_intercept() {
         global $wp_query;
         global $wpdb;
+        
+        print_r($_GET);
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
@@ -90,6 +94,9 @@ class iHerbarium {
             echo $this->getPhotoHtml($idPhoto,$idObs);    
             
             exit;
+        }
+        if ($wp_query->get('herbier')) {
+            echo 'herbier';
         }
     }
     
@@ -193,14 +200,22 @@ class iHerbarium {
         <div id="map_canvas" style="width:500px; height:400px"></div>
         <br/>
         <br/>';
+		
+		$content.= " UUID de l'observation: ".$results[0]["uuid_observation"]."<br><br>";
         
+		
+		if($results[0]["latitude"]!=0 && $results[0]["longitude"]!=0){
+		    $content.= "<br><strong>Si vous avez récolté cette plante ou une partie de celle-ci, vous avez la possibilité ci-dessous d'imprimer facilement des étiquettes pour votre herbier</strong><br>";
+		}
+		
+		$content .= "Obtenir une page à imprimer avec une étiquette";
+		$content .= '<a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=compact">Compact</a>';
         /*
 
-$content.= get_string_language_sql("ws_uuid_observation",$mylanguage)  ." : ".$lobervation["uuid_observation"]."<br/><br/>\n";
+
       
          
-         if($lobervation["latitude"]!=0 && $lobervation["longitude"]!=0){
-	$content.= "<br><strong>".get_string_language_sql("ws_about_label_herbarium",$mylanguage)."</strong><br>";
+         
     
    
 	$content.=get_string_language_sql("ws_go_page_with_qrcode",$mylanguage);
