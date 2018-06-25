@@ -38,8 +38,9 @@ class iHerbarium {
         $newRule = array('test/(.+)' => 'index.php?test='.$wp_rewrite->preg_index(1),
             'observations/(.+)' => 'index.php?listeobs='.$wp_rewrite->preg_index(1),
             'observation/data/(.+)' => 'index.php?idobs='.$wp_rewrite->preg_index(1),
-            'observation/photo(.+)' => 'index.php?idphoto='.$wp_rewrite->preg_index(1),
-            'choix-dune-etiquette/herbier-support/(.+)' => 'index.php?herbier=true',
+            'observation/photo/large/(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto='.$wp_rewrite->preg_index(1),
+            'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
+            'choix-dune-etiquette/herbier-support(.*)' => 'index.php?herbier=1',
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -47,15 +48,22 @@ class iHerbarium {
     
     function add_query_vars($qvars) {
         $qvars[] = 'test';
+        $qvars[] = 'ihaction';
         $qvars[] = 'idobs';
         $qvars[] = 'idphoto';
+        $qvars[] = 'name';
+        $qvars[] = 'size';
         $qvars[] = 'herbier';
         $qvars[] = 'listeobs';
+        $qvars[] = 'numero_observation';
+        $qvars[] = 'template';
         return $qvars;
     }
     function template_redirect_intercept() {
         global $wp_query;
         global $wpdb;
+        
+        //var_dump($wp_query->query_vars);
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
@@ -78,15 +86,21 @@ class iHerbarium {
     
             exit;
         }
-        if ($wp_query->get('idphoto')) {
-            echo 'large';
-        }
-        if (strpos($_SERVER['REQUEST_URI'],'/scripts/large.php') !== false)
+        if ($wp_query->get('ihaction') == "getphoto") 
+        //if (strpos($_SERVER['REQUEST_URI'],'/scripts/large.php') !== false)
         {
+            if ($wp_query->get('idphoto') == 'old')
+                $getIdPhoto = $wp_query->get('name');
+            else 
+                $getIdPhoto = $wp_query->get('idphoto');
             
-            $amyid=explode('.',$_GET['name']);
-            $amyid=explode('_',$amyid[0]);
-            if (strpos($wp_query->get('name'),'photo') !== false)
+                echo $getIdPhoto;
+                echo $wp_query->get('idPhoto');
+            
+           // $amyid=explode('-',$getIdPhoto);
+            $amyid=preg_replace('/[.-][^.-]{1,4}/','',$getIdPhoto);
+            $amyid=explode('_',$amyid);
+            if (strpos($getIdPhoto,'photo') !== false)
             {
                 $idPhoto = (int)$amyid[1];
                 $idObs = (int)$amyid[3];
@@ -103,6 +117,7 @@ class iHerbarium {
         }
         if ($wp_query->get('herbier')) {
             echo 'herbier';
+            exit;
         }
     }
     
@@ -164,8 +179,9 @@ class iHerbarium {
         foreach ($results_photo as $row)
         /*TODO: changer url..., canonical url*/
         {
+            //<a href="'.get_bloginfo('wpurl').'/scripts/large.php?name='.$row['nom_photo_final'].'">
             $content .= '
-              <a href="'.get_bloginfo('wpurl').'/scripts/large.php?name='.$row['nom_photo_final'].'">
+              <a href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'">
               	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'">
               </a>';
         }	  
@@ -299,7 +315,6 @@ class iHerbarium {
                 FROM iherba_photos,iherba_observations 
                 WHERE idphotos= '$idPhoto' and idobs=".$idObs.";";
         $results = $wpdb->get_results( $sql, ARRAY_A );
-        
        
         if (sizeof($results)!=1)
         {
@@ -313,8 +328,8 @@ class iHerbarium {
         $content = $this->getHeaderHtml();
         $content .= $texte_licence.'
         <br>
-        <a href="'.$this->domaine_photo.'/medias/big/'.$_GET['name'].'" border=0>
-        		<img src="'.$this->domaine_photo.'/medias/big/'.$_GET['name'].'" >
+        <a href="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" border=0>
+        		<img src="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" >
         	</a>';
         $content .= $this->getFooterHtml();
         return $content;
@@ -437,6 +452,7 @@ class iHerbarium {
         return $content;
         
     }
+    
 }
 
 $iHerbarium = new iHerbarium();
