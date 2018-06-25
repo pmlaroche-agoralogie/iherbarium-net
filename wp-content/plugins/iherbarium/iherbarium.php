@@ -24,7 +24,7 @@ class iHerbarium {
     
     public function ihb_shortcode()
     {
-        return 'toto';
+        return $this->getListeObsHtml();
     }
     
     function flush_rewrite_rules() {
@@ -36,6 +36,7 @@ class iHerbarium {
     function create_rewrite_rules($rules) {
         global $wp_rewrite;
         $newRule = array('test/(.+)' => 'index.php?test='.$wp_rewrite->preg_index(1),
+            'observations/(.+)' => 'index.php?listeobs='.$wp_rewrite->preg_index(1),
             'observation/data/(.+)' => 'index.php?idobs='.$wp_rewrite->preg_index(1),
             'observation/photo(.+)' => 'index.php?idphoto='.$wp_rewrite->preg_index(1),
             'choix-dune-etiquette/herbier-support/(.+)' => 'index.php?herbier=true',
@@ -49,17 +50,22 @@ class iHerbarium {
         $qvars[] = 'idobs';
         $qvars[] = 'idphoto';
         $qvars[] = 'herbier';
+        $qvars[] = 'listeobs';
         return $qvars;
     }
     function template_redirect_intercept() {
         global $wp_query;
         global $wpdb;
-        
-        print_r($_GET);
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
             $this->pushoutput($wp_query->get('test'));
+            include ('tpl/footer.php');
+            exit;
+        }
+        if ($wp_query->get('listeobs') || is_front_page()) {
+            include ('tpl/header.php');
+            echo $this->getListeObsHtml(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
             exit;
         }
@@ -236,6 +242,51 @@ class iHerbarium {
 		
 		$content .= $this->getFooterHtml();
 		return $content;
+    }
+    
+    function getListeObsHtml($limit = 10, $offset = 0)
+    {
+        global $wpdb;
+        
+        $sql = "SELECT idobs FROM iherba_observations";
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        $total = sizeof($results);
+        
+        $sql = "SELECT * FROM iherba_observations ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        
+        if (sizeof($results)==01)
+        {
+            echo "Erreur dans la récupération des observations";
+            die();
+        }
+        $content = "";
+        foreach ($results as $row)
+        {
+            //TODO: fonction get user affichage
+            $content .= '<div class="fiche_liste">';
+            $content .= '<h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : '.$row['id_user'].'</h2>';
+            $content .= 'Cliquez sur une image pour voir le détail.<br>';
+            
+            $sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$row['idobs']." LIMIT 0,3";
+            $results_photo = $wpdb->get_results( $sql , ARRAY_A );
+            foreach ($results_photo as $row_photo)
+            {
+                $url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
+                $content .= '
+              <a href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'">
+              	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'">
+              </a>';
+            }
+            
+            
+            $content .= '</div>';
+        }
+        if ($offset != 0)
+            $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
+        if ( ($total%$limit) > $offset+1)
+            $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
+        return $content;
     }
     
     function getPhotoHtml($idPhoto,$idObs)
