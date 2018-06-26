@@ -9,6 +9,8 @@
  Text Domain: iherbarium
  */
 
+include_once(plugin_dir_path( __FILE__ ).'utils.php');
+
 class iHerbarium {
     public $domaine_photo = "http://migration.iherbarium.fr";
     
@@ -116,7 +118,7 @@ class iHerbarium {
             exit;
         }
         if ($wp_query->get('herbier')) {
-            echo 'herbier';
+            echo $this->getEtiquetteHTML($wp_query->get('numero_observation'),$wp_query->get('template'));
             exit;
         }
     }
@@ -153,12 +155,20 @@ class iHerbarium {
         return $output; 
     }
     
-    function getObsHtml($idObs)
+    function getObsArray($idObs)
     {
         global $wpdb;
         
         $sql = "SELECT * FROM iherba_observations WHERE idobs = ".$idObs;
         $results = $wpdb->get_results( $sql , ARRAY_A );
+        return $results;
+    }
+    
+    function getObsHtml($idObs)
+    {
+        global $wpdb;
+           
+        $results = $this->getObsArray($idObs);
         
         if (sizeof($results)!=1)
         {
@@ -335,7 +345,7 @@ class iHerbarium {
         return $content;
     }
     
-    function getDeterminationHTML($idObs)
+    function getDeterminationArray($idObs)
     {
         global $wpdb;
         
@@ -345,22 +355,30 @@ class iHerbarium {
         //if($texteseul==0){$finchamps ="_forweb"; $finligne = "<br/>";} else {$finchamps ="_formail";$finligne = " \n";}
         $finligne = "<br/>";
         
-        $sql = "SELECT iherba_determination.id , tropicosid, tropicosgenusid, tropicosfamilyid, 
-                        nom_commun,nom_scientifique,date, famille,genre ,id_cases,tag_for_translation, 
-                        iherba_determination_cases.$champscomment ,iherba_certitude_level.value as certitude_level, 
+        $sql = "SELECT iherba_determination.id,iherba_determination.id_user , tropicosid, tropicosgenusid, tropicosfamilyid,
+                        nom_commun,nom_scientifique,date, famille,genre ,id_cases,tag_for_translation,
+                        iherba_determination_cases.$champscomment ,iherba_certitude_level.value as certitude_level,
                         iherba_certitude_level.comment AS certitude_comment, iherba_determination.comment,
                         iherba_precision_level.value AS precision_level,
-                        iherba_precision_level.$champscomment AS precisioncomment 
-                FROM iherba_determination, iherba_determination_cases,iherba_certitude_level, iherba_precision_level 
-                WHERE  iherba_determination_cases.language = 'fr' 
-                    AND iherba_determination_cases.id_cases = iherba_determination.comment_case 
-                    AND iherba_determination.probabilite != 0 
-                    AND iherba_determination.precision_level = iherba_precision_level.value 
-                    AND iherba_determination.certitude_level = iherba_certitude_level.value 
-                    AND iherba_determination.id_obs=$idObs 
+                        iherba_precision_level.$champscomment AS precisioncomment
+                FROM iherba_determination, iherba_determination_cases,iherba_certitude_level, iherba_precision_level
+                WHERE  iherba_determination_cases.language = 'fr'
+                    AND iherba_determination_cases.id_cases = iherba_determination.comment_case
+                    AND iherba_determination.probabilite != 0
+                    AND iherba_determination.precision_level = iherba_precision_level.value
+                    AND iherba_determination.certitude_level = iherba_certitude_level.value
+                    AND iherba_determination.id_obs=$idObs
                 ORDER BY creation_timestamp DESC";
         
         $results = $wpdb->get_results( $sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getDeterminationHTML($idObs)
+    {
+        global $wpdb;
+        
+        $results = $this->getDeterminationArray($idObs);
         
         $content = "";
         foreach ($results as $row)
@@ -451,6 +469,46 @@ class iHerbarium {
         
         return $content;
         
+    }
+    
+    function getEtiquetteHTML($idObs,$size)
+    {
+        $results = $this->getObsArray($idObs);
+        
+        print_r($results);
+        $row = $results[0];
+        
+        $results2 = $this->getDeterminationArray($idObs);
+        print_r($results2);
+        $row2 = $results2[0];
+        
+        $nom_commun=$row2["nom_commun"];
+        $nom_scientifique=$row2["scientificname_html"];
+        
+        $nameObs= $nom_scientifique ;
+        if($nom_commun !='')$nameObs .= "(".$nom_commun. ") ";
+        
+        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$lobervation['uuid_specimen'];
+        $urlgoogle =  'http://chart.apis.google.com/chart?chs=420x420&cht=qr&chld=H&chl='.urlencode($urlqrencode);
+        $position=convertSexa2coord($row["latitude"],$row["longitude"]);
+        
+        $output = "";
+        switch ($size)
+        {
+            case 'compact':
+                ob_start();
+                include ('tpl/etiquette-compact.php');
+                $output = ob_get_contents();
+                ob_end_clean();
+                
+                break;
+            case 'classic':
+                break;
+            default :
+                //complete
+                ;
+        }
+        return $output; 
     }
     
 }
