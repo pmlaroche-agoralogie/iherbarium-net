@@ -1,4 +1,5 @@
-	</main><!-- #main -->
-</div><!-- #primary -->
-</div><!-- .wrap -->
-<?php get_footer();
+	</div><!-- role main -->
+</div><!-- #inner_content-->
+<?php get_footer();?>
+</div><!-- #content -->
+<?php 
