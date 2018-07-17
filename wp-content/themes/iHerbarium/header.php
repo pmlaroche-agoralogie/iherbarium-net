@@ -48,14 +48,21 @@
 			<header class="header site-header" role="banner">
 
 				<div id="inner-header" class="wrap clearfix">
-
 					<!-- to use a image just replace the bloginfo('name') with your img src and remove the surrounding <p> -->
-					<p id="logo" class="h1"><a href="<?php echo home_url(); ?>" rel="nofollow"><?php bloginfo('name'); ?></a></p>
+					<div id="logo" class="h1"><a href="<?php echo home_url(); ?>" rel="nofollow" title="<?php bloginfo('name'); ?>"></a></div>
+
 
 					<!-- if you'd like to use the site description you can un-comment it below -->
 					<?php // bloginfo('description'); ?>
 					<div class="bandeau-mobile">
-						<div class="header__icon menuclic" id="header__icon"></div>
+						<div class="header__icon menuclic" id="header__icon">
+						<div id="nav-icon3">
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                            </div>
+                         </div>
 					</div>
 
 

@@ -68,6 +68,8 @@ jQuery(document).ready(function($) {
 	
 	// add all your scripts here
     
+    
+
     /** IHERBARIUM **/
     /** menu mobile **/
     //$('body').css('background','grey');
@@ -75,15 +77,18 @@ jQuery(document).ready(function($) {
     $('.menuclic').click(function(e){
   	  e.preventDefault(); 
   	  $('body').toggleClass('with--sidebar');
+  	  $('#nav-icon3').toggleClass('open');
     });
     
     $('.menu_back').click(function(e){
   	  e.preventDefault(); 
   	  $('body').toggleClass('with--sidebar');
+  	  $('#nav-icon3').toggleClass('open');
     });
 
     $('#site-cache').click(function(e){
   	  $('body').removeClass('with--sidebar');
+  	  $('#nav-icon3').removeClass('open');
     });
     
     $('#menu-principal-1 > li > a').click(function(e){
@@ -112,9 +117,17 @@ jQuery(document).ready(function($) {
   		}
   	});
   	
+  	$('#content').scroll(function(){
+  		if ($(this).scrollTop() > 100) {
+  			$('.scrollToTop').fadeIn();
+  		} else {
+  			$('.scrollToTop').fadeOut();
+  		}
+  	});
+  	
   	//Click event to scroll to top
   	$('.scrollToTop').click(function(){
-  		$('html, body').animate({scrollTop : 0},800);
+  		$('html, body,#content').animate({scrollTop : 0},800);
   		return false;
   	});
 	

@@ -291,22 +291,26 @@ class iHerbarium {
         {
             //TODO: fonction get user affichage
             $content .= '<div class="fiche_liste">';
-            $content .= '<h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : '.$row['id_user'].'</h2>';
-            $content .= 'Cliquez sur une image pour voir le détail.<br>';
+            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : '.$row['id_user'].'</h2></div>';
+            $content .= '<div class="contenu">Cliquez sur une image pour voir le détail.<br>';
             
             $sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$row['idobs']." LIMIT 0,3";
             $results_photo = $wpdb->get_results( $sql , ARRAY_A );
             foreach ($results_photo as $row_photo)
             {
                 $url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
-                $content .= '
+               /* $content .= '
               <a href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'">
               	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'">
+              </a>';*/
+                $content .= '
+              <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
+                 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
               </a>';
             }
             
             
-            $content .= '</div>';
+            $content .= '</div></div>';
         }
         if ($offset != 0)
             $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
