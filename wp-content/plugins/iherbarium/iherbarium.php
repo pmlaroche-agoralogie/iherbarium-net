@@ -178,6 +178,9 @@ class iHerbarium {
 
         $content = $this->getHeaderHtml();
         $content .= $this->getDeterminationHTML($idObs);
+        $content .= '<div class="fiche">';
+        $content .= '<div class="header"><h1>Observation numéro : '.$idObs.'</h1></div>';
+        $content .= '<div class="contenu">';
         $content .= 'Commentaires : '.$results[0]['commentaires'].'<br><br>';
         $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
         $content .= '<br>';
@@ -190,9 +193,13 @@ class iHerbarium {
         /*TODO: changer url..., canonical url*/
         {
             //<a href="'.get_bloginfo('wpurl').'/scripts/large.php?name='.$row['nom_photo_final'].'">
-            $content .= '
+            /*$content .= '
               <a href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'">
               	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'">
+              </a>';*/
+            $content .= '
+              <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'" 
+                style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'\')">
               </a>';
         }	  
 
@@ -242,6 +249,9 @@ class iHerbarium {
 		
 		$content .= "Obtenir une page à imprimer avec une étiquette";
 		$content .= '<a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=compact">Compact</a>';
+		$content .= '</div>';
+		$content .= '</div>';
+		
         /*
 
 

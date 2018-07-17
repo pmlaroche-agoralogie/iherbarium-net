@@ -268,6 +268,7 @@ nav ol {
  */
 img {
   border: 0;
+  max-width:100%;
   /* 1 */
 
   -ms-interpolation-mode: bicubic;
@@ -840,7 +841,7 @@ a:hover,
 a:visited:hover,
 a:focus,
 a:visited:focus {
-  color: #d10e3c;
+  color: #013b1b;
 }
 a:link,
 a:visited:link {
@@ -949,11 +950,14 @@ and more scalable.
 
 }
 .nav li a {
+  color:#013b1b;
   display: block;
   text-decoration: none;
   padding: 10px 10px;
-  background-color: #eee;
+  background-color: #fff;
   border-bottom: 1px solid #ccc;
+  border-radius: 15px 15px 0 0;
+  margin-right:5px;
   /*
 			remember this is for mobile ONLY, so there's no need
 			to even declare hover styles here, you can do it in
@@ -1356,12 +1360,10 @@ header nav[role=navigation] {
     bottom: 0;
     /*overflow-y: scroll;*/
     -webkit-overflow-scrolling: touch;
-    background-color: #2a378b;
     width: 450px ;
     transform: translateX(450px); 
-    background:white;
    /* text-align:center;*/
-   padding:10px;
+   /*padding:10px;*/
   }
   
 .navclassic{display:none}
@@ -1501,7 +1503,7 @@ html.js {
     -webkit-overflow-scrolling: touch;}
     
 /** mise en forme **/
-body.admin-bar {margin-top:46px;}
+body.admin-bar {padding-top:46px;}
 header.site-header {background-color:#013b1b;z-index: 500;
     position: relative;}
 #logo {background: url(../images/logo-big.png) no-repeat left center transparent;width:200px;height:50px;background-size:contain;margin:0;float:left;}
@@ -1511,6 +1513,13 @@ header.site-header {background-color:#013b1b;z-index: 500;
 .fiche_liste h2{padding:0 60px 0 0;background: url(../images/logo.png) no-repeat right center #013b1b;background-size:contain;margin:0;font-size:18px}
 .fiche_liste .contenu{padding:10px;background:#ecfaf1;border-radius:5px;}
 .fiche_liste .contenu .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
+	margin: 5px 5px 5px 0;border-radius:5px;}
+	
+.fiche{border:2px solid #013b1b;border-radius:5px;margin-bottom:10px;}
+.fiche .header{color:#fff;margin-top:0;padding:10px;background:#013b1b;}
+.fiche h1{padding:0 60px 0 0;background: url(../images/logo.png) no-repeat right center #013b1b;background-size:contain;margin:0;font-size:20px}
+.fiche .contenu{padding:10px;background:#ecfaf1;border-radius:5px;}
+.fiche .contenu .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
 	margin: 5px 5px 5px 0;border-radius:5px;}
 
 /*
@@ -1742,7 +1751,7 @@ you can add resource intensive styles.
   NAVIGATION STYLES
   *********************/
   .nav {
-    background: #eee;
+   /* background: #eee;*/
     border: 0;
     /* end .menu ul li */
   
@@ -1809,6 +1818,8 @@ you can add resource intensive styles.
     top: auto;
     display: block;
   }
+  .nav li.current_page_item a { background-color: #ecfaf1;}
+
   /* end .nav */
   /*********************
   SIDEBARS & ASIDES
@@ -1873,10 +1884,8 @@ you can add resource intensive styles.
 header nav[role=navigation] {
     position: relative;
     -webkit-overflow-scrolling: touch;
-    background-color: #2a378b;
     width: 100%;
     transform: none; 
-    background:white;
     text-align:left;
   }
   
@@ -1893,10 +1902,11 @@ header nav[role=navigation] {
     overflow-y: initial;
     -webkit-overflow-scrolling: initial;}
   
-  body.admin-bar {margin-top:32px;}
+  body.admin-bar {margin-top:32px;padding-top:0px;}
   
   /** mise en forme **/
   #logo {width:250px;height:60px;background-size:contain;margin:0;float:none;}
+  header.site-header{margin-bottom:10px;}
   
   
 }
