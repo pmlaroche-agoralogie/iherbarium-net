@@ -73,7 +73,8 @@ class iHerbarium {
             include ('tpl/footer.php');
             exit;
         }
-        if ($wp_query->get('listeobs') || is_front_page()) {
+
+        if ($wp_query->get('listeobs') != "" || is_front_page()) {
             include ('tpl/header.php');
             echo $this->getListeObsHtml(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
@@ -206,7 +207,30 @@ class iHerbarium {
 		$content .= '<br><br>Cette observation a été localisée à la latitude '.round($results[0]['latitude'], 4).' 
                         et la longitude '.round($results[0]['longitude'],4).'<br><br>';
         
-		$content .= '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+		$content .= '
+<div id="mapDiv" style="width: 800px; height: 500px"></div>
+    <script>
+        // position we will use later
+        var lat = '.$results[0]['latitude'].';
+        var lon = '.$results[0]['longitude'].';
+ 
+        // initialize map
+        map = L.map("mapDiv").setView([lat, lon], 13);
+ 
+        // set map tiles source
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
+            maxZoom: 18,
+        }).addTo(map);
+ 
+        // add marker to the map
+        marker = L.marker([lat, lon]).addTo(map);
+ 
+        // add popup to the marker
+        //marker.bindPopup("<b>ACME CO.</b><br />This st. 48<br />New York").openPopup();
+    </script>
+
+<!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
         <script type="text/javascript">
         var longitude ='.$results[0]['longitude'].';
         var latitude='.$results[0]['latitude'].';
@@ -236,7 +260,7 @@ class iHerbarium {
         }
         </script>
         
-        <div id="map_canvas" style="width:500px; height:400px"></div>
+        <div id="map_canvas" style="width:500px; height:400px"></div>-->
         <br/>
         <br/>';
 		
