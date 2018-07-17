@@ -193,11 +193,6 @@ class iHerbarium {
         foreach ($results_photo as $row)
         /*TODO: changer url..., canonical url*/
         {
-            //<a href="'.get_bloginfo('wpurl').'/scripts/large.php?name='.$row['nom_photo_final'].'">
-            /*$content .= '
-              <a href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'">
-              	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'">
-              </a>';*/
             $content .= '
               <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'" 
                 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'\')">
@@ -208,59 +203,27 @@ class iHerbarium {
                         et la longitude '.round($results[0]['longitude'],4).'<br><br>';
         
 		$content .= '
-<div id="mapDiv" style="width: 800px; height: 500px"></div>
-    <script>
-        // position we will use later
-        var lat = '.$results[0]['latitude'].';
-        var lon = '.$results[0]['longitude'].';
- 
-        // initialize map
-        map = L.map("mapDiv").setView([lat, lon], 13);
- 
-        // set map tiles source
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
-            maxZoom: 18,
-        }).addTo(map);
- 
-        // add marker to the map
-        marker = L.marker([lat, lon]).addTo(map);
- 
-        // add popup to the marker
-        //marker.bindPopup("<b>ACME CO.</b><br />This st. 48<br />New York").openPopup();
-    </script>
-
-<!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-        <script type="text/javascript">
-        var longitude ='.$results[0]['longitude'].';
-        var latitude='.$results[0]['latitude'].';
-        var geocoder;
-        var map;
-        
-        function initialize() {
-        	geocoder = new google.maps.Geocoder();
-        	var myLatlng = new google.maps.LatLng(latitude,longitude);
-        	var myOptions = {
-        	    zoom: 15,
-        	    center: myLatlng,
-        	    mapTypeId: google.maps.MapTypeId.HYBRID
-        	}
-        	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-        	
-        	var marker = new google.maps.Marker({
-        	    position: myLatlng, 
-        	    map: map,
-        	    
-        	});
-        }
+        <div id="mapDiv" style=" height: 500px"></div>
+        <script>
+            // position we will use later
+            var lat = '.$results[0]['latitude'].';
+            var lon = '.$results[0]['longitude'].';
+     
+            // initialize map
+            map = L.map("mapDiv").setView([lat, lon], 13);
+     
+            // set map tiles source
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
+                maxZoom: 18,
+            }).addTo(map);
+     
+            // add marker to the map
+            marker = L.marker([lat, lon]).addTo(map);
+     
+            // add popup to the marker
+            //marker.bindPopup("<b>ACME CO.</b><br />This st. 48<br />New York").openPopup();
         </script>
-        <script type="text/javascript">
-        window.onload = function() {
-           initialize();
-        }
-        </script>
-        
-        <div id="map_canvas" style="width:500px; height:400px"></div>-->
         <br/>
         <br/>';
 		
@@ -333,16 +296,11 @@ class iHerbarium {
             foreach ($results_photo as $row_photo)
             {
                 $url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
-               /* $content .= '
-              <a href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'">
-              	<img src="'.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'">
-              </a>';*/
                 $content .= '
-              <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
-                 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
-              </a>';
+                  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
+                     style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
+                  </a>';
             }
-            
             
             $content .= '</div></div>';
         }
