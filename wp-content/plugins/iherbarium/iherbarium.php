@@ -38,7 +38,7 @@ class iHerbarium {
     function create_rewrite_rules($rules) {
         global $wp_rewrite;
         $newRule = array('test/(.+)' => 'index.php?test='.$wp_rewrite->preg_index(1),
-            'observations/(.+)' => 'index.php?listeobs='.$wp_rewrite->preg_index(1),
+            '(.*)observations/(.+)' => 'index.php?listeobs='.$wp_rewrite->preg_index(2),
             'observation/data/(.+)' => 'index.php?idobs='.$wp_rewrite->preg_index(1),
             'observation/photo/large/(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto='.$wp_rewrite->preg_index(1),
             'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
@@ -100,6 +100,21 @@ class iHerbarium {
         return $desc;
     }
     
+    function setCurrentPage($url){
+        global $wp_query;
+
+        $postid = url_to_postid($url);
+        $post = get_post($postid);
+    
+        $query_vars = $wp_query->query;
+        if ($post->post_type == 'page')
+            $query_vars['pagename'] = $post->post_name;
+        if ($post->post_type == 'post')
+            $query_vars['name'] = $post->post_name;
+
+        $wp_query->query($query_vars);      
+    }
+    
     
     
     function template_redirect_intercept() {
@@ -107,8 +122,8 @@ class iHerbarium {
         global $wpdb;
         
         //var_dump($wp_query->query_vars);
+        //var_dump($wp_query);
         
-
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
@@ -119,8 +134,13 @@ class iHerbarium {
         
 
         if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
-            /*$page_obs = (int)$wp_query->get('listeobs')+1;
-            add_filter('wp_title', 'iHerbarium - Observations - Page '.$page_obs, 100);*/
+            if (strpos($_SERVER['REQUEST_URI'],'observations/'))
+            {
+                $url = explode('observations/',$_SERVER['REQUEST_URI']);
+                $this->setCurrentPage($url[0]);
+            }
+            //print_r($wp_query->query_vars);
+            //print_r($_SERVER);
             include ('tpl/header.php');
             echo $this->getListeObsHtml(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
@@ -317,6 +337,7 @@ class iHerbarium {
     function getListeObsHtml($limit = 10, $offset = 0)
     {
         global $wpdb;
+        global $wp;
         
         $sql = "SELECT idobs FROM iherba_observations";
         $results = $wpdb->get_results( $sql , ARRAY_A );
@@ -354,7 +375,9 @@ class iHerbarium {
         if ($offset != 0)
             $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
         if ( ($total%$limit) > $offset+1)
-            $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
+            //$content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
+            $content .= '<a href="'.home_url( $wp->request ).'/observations/'.($offset+1).'/">Suivant</a>';
+            
         return $content;
     }
     
@@ -553,6 +576,8 @@ class iHerbarium {
         }
         return $output; 
     }
+    
+    
     
 }
 

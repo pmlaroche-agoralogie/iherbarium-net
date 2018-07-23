@@ -932,6 +932,7 @@ and more scalable.
 .nav {
   border: 1px solid #ccc;
   border-bottom: 0;
+  margin-bottom: 0;
   /* end .menu li */
 
   /* highlight current page */
@@ -1818,7 +1819,7 @@ you can add resource intensive styles.
     top: auto;
     display: block;
   }
-  .nav li.current_page_item a { background-color: #ecfaf1;}
+  .nav li.current-menu-item a { background-color: #ecfaf1;}
 
   /* end .nav */
   /*********************
