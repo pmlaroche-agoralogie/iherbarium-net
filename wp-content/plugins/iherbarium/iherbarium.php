@@ -61,11 +61,54 @@ class iHerbarium {
         $qvars[] = 'template';
         return $qvars;
     }
+    
+    function getTitleiHerbarium() {
+        global $wp_query;
+        $title = '';
+        if ($wp_query->get('idobs')) {
+            $title = 'iHerbarium - Observation n° '.$wp_query->get('idobs');
+        }
+        if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
+            $page_obs = (int)$wp_query->get('listeobs') + 1;
+            $title = 'iHerbarium - Observations - Page '.$page_obs;
+        }
+        
+        if ($title == ''){
+            //recup original
+            /** TODO: besoin de $post?*/
+            $title=get_the_title();
+        }
+        return $title;
+    }
+    
+    function getDesciHerbarium() {
+        global $wp_query;
+        $desc = '';
+        if ($wp_query->get('idobs')) {
+            $desc = 'iHerbarium - Observation n° '.$wp_query->get('idobs');
+        }
+        if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
+            $page_obs = (int)$wp_query->get('listeobs') + 1;
+            $desc = 'iHerbarium - Observations - Page '.$page_obs;
+        }
+        
+        /*if ($desc == ''){
+            //recup original
+            // TODO: besoin de $post?
+            $desc=get_the_title();
+        }*/
+        return $desc;
+    }
+    
+    
+    
     function template_redirect_intercept() {
         global $wp_query;
         global $wpdb;
         
         //var_dump($wp_query->query_vars);
+        
+
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
@@ -73,8 +116,11 @@ class iHerbarium {
             include ('tpl/footer.php');
             exit;
         }
+        
 
-        if ($wp_query->get('listeobs') != "" || is_front_page()) {
+        if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
+            /*$page_obs = (int)$wp_query->get('listeobs')+1;
+            add_filter('wp_title', 'iHerbarium - Observations - Page '.$page_obs, 100);*/
             include ('tpl/header.php');
             echo $this->getListeObsHtml(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
@@ -82,6 +128,7 @@ class iHerbarium {
         }
         if ($wp_query->get('idobs')) {
             
+            /*add_filter('wp_title', 'iHerbarium - Observation n° ', 100);*/
             $amyid = explode('-',$wp_query->get('idobs'));
             $idObs = (int)$amyid[sizeof($amyid)-1];
             
@@ -521,4 +568,6 @@ add_filter('query_vars',array($iHerbarium, 'add_query_vars'));
 // Could probably run it once as long as it isn't going to change or check the
 // $wp_rewrite rules to see if it's active.
 add_filter('admin_init', array($iHerbarium, 'flush_rewrite_rules'));
+add_filter('wp_title', array($iHerbarium, 'getTitleiHerbarium'));
+add_filter( 'wpseo_metadesc', array($iHerbarium, 'getDesciHerbarium'));
 add_action( 'template_redirect', array($iHerbarium, 'template_redirect_intercept') );
