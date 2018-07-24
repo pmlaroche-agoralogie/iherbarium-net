@@ -1523,6 +1523,27 @@ header.site-header {background-color:#013b1b;z-index: 500;
 .fiche .contenu .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
 	margin: 5px 5px 5px 0;border-radius:5px;}
 
+
+/** ETIQUETTE **/
+.etiquette{
+	margin:5px;
+	padding:5px;
+	font-family: 'courier';
+    font-size: 12px;
+    text-align: left;
+    border: 3px double #bfc8ab;
+    display:table;
+    line-height: initial; }
+.etiquette div{display:table-cell;vertical-align: top;}
+.etiquette.compact{font-size: 11px;}
+.etiquette.compact img{width:70px;}
+.etiquette.classic img,.etiquette.complete img{width:100px;}
+.important {font-weight:bold}
+.etiquette.compact .important.title {font-size:12px}
+.etiquette.complete .famille {font-size:24px;text-align:center;display:block}
+.etiquette.complete .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
+	margin: 5px 15px 5px 0;border-radius:5px;}
+
 /*
 	if you checked out the link above:
 	http://www.alistapart.com/articles/organizing-mobile/
@@ -1911,6 +1932,9 @@ header nav[role=navigation] {
   
   
 }
+
+
+
 /*
 DESKTOP
 This is the average viewing window. So Desktops, Laptops, and

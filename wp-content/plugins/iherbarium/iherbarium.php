@@ -131,9 +131,8 @@ class iHerbarium {
             include ('tpl/footer.php');
             exit;
         }
-        
 
-        if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
+        if ($wp_query->get('listeobs') != "" || (strpos($wp_query->post->post_content,'[iHerbarium]') && sizeof($wp_query->posts) <2) ) {
             if (strpos($_SERVER['REQUEST_URI'],'observations/'))
             {
                 $url = explode('observations/',$_SERVER['REQUEST_URI']);
@@ -302,7 +301,9 @@ class iHerbarium {
 		}
 		
 		$content .= "Obtenir une page à imprimer avec une étiquette";
-		$content .= '<a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=compact">Compact</a>';
+		$content .= '  <a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=compact">Compact</a>';
+		$content .= '  <a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=classic">Classique</a>';
+		$content .= '  <a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=complete">Page support</a>';
 		$content .= '</div>';
 		$content .= '</div>';
 		
@@ -539,24 +540,42 @@ class iHerbarium {
     
     function getEtiquetteHTML($idObs,$size)
     {
-        $results = $this->getObsArray($idObs);
+        global $wpdb;
         
-        print_r($results);
-        $row = $results[0];
+        $results = $this->getObsArray($idObs);
+        $row = $results[0];//print_r($row);
         
         $results2 = $this->getDeterminationArray($idObs);
-        print_r($results2);
-        $row2 = $results2[0];
+        $row2 = $results2[0];//print_r($row2);
         
         $nom_commun=$row2["nom_commun"];
-        $nom_scientifique=$row2["scientificname_html"];
+        $nom_scientifique=$row2["nom_scientifique"];
         
         $nameObs= $nom_scientifique ;
         if($nom_commun !='')$nameObs .= "(".$nom_commun. ") ";
+        if ($nameObs == '')
+            $nameObs = '--';
+        
+        $authorDeterminObs = $row2['id_user'];
+        if ( $row2['date'] != '')
+            $authorDeterminObs .= " (".$row2['date'].") ";;
         
         $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$lobervation['uuid_specimen'];
         $urlgoogle =  'http://chart.apis.google.com/chart?chs=420x420&cht=qr&chld=H&chl='.urlencode($urlqrencode);
         $position=convertSexa2coord($row["latitude"],$row["longitude"]);
+        
+        if ($size == 'complete')
+        {
+            $imgs = '';
+            $sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$idObs;
+            $results_photo = $wpdb->get_results( $sql , ARRAY_A );
+            foreach ($results_photo as $row_photo)
+            {
+                $imgs .= '<br>
+                  <div class="min-img" style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
+                  </div>';
+            }	  
+        }
         
         $output = "";
         switch ($size)
@@ -566,12 +585,19 @@ class iHerbarium {
                 include ('tpl/etiquette-compact.php');
                 $output = ob_get_contents();
                 ob_end_clean();
-                
                 break;
             case 'classic':
+                ob_start();
+                include ('tpl/etiquette-classic.php');
+                $output = ob_get_contents();
+                ob_end_clean();
                 break;
             default :
                 //complete
+                ob_start();
+                include ('tpl/etiquette-complete.php');
+                $output = ob_get_contents();
+                ob_end_clean();
                 ;
         }
         return $output; 
