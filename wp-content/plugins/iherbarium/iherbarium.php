@@ -253,10 +253,12 @@ class iHerbarium {
         }
 
         $content = $this->getHeaderHtml();
-        $content .= $this->getDeterminationHTML($idObs);
+        
         $content .= '<div class="fiche">';
         $content .= '<div class="header"><h1>Observation numéro : '.$idObs.'</h1></div>';
         $content .= '<div class="contenu">';
+        $content .= $this->getDeterminationHTML($idObs);
+        
         $content .= 'Commentaires : '.$results[0]['commentaires'].'<br><br>';
         $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
         $content .= '<br>';
@@ -315,30 +317,6 @@ class iHerbarium {
 		$content .= '  <a href="'.get_bloginfo('wpurl').'/choix-dune-etiquette/herbier-support/?numero_observation='.$idObs.'&amp;check=456789&amp;template=complete">Page support</a>';
 		$content .= '</div>';
 		$content .= '</div>';
-		
-        /*
-
-
-      
-         
-         
-    
-   
-	$content.=get_string_language_sql("ws_go_page_with_qrcode",$mylanguage);
-	$paramlien = array(numero_observation  => $numero_observation,check=>456789,template=>'compact');
-	$content.= "&nbsp;&nbsp;&nbsp;&nbsp;".$this->pi_linkToPage(get_string_language_sql("ws_go_page_with_qrcode_compact",$mylanguage),47,'',$paramlien);
-	$paramlien = array(numero_observation  => $numero_observation,check=>456789,template=>'classic');
-	$content.= "&nbsp;&nbsp;&nbsp;&nbsp;".$this->pi_linkToPage(get_string_language_sql("ws_go_page_with_qrcode_classic",$mylanguage),47,'',$paramlien);
-	$paramlien = array(numero_observation  => $numero_observation,check=>456789,template=>'complete');
-	$content.= "&nbsp;&nbsp;&nbsp;&nbsp;".$this->pi_linkToPage(get_string_language_sql("ws_go_page_with_qrcode_complete",$mylanguage),47,'',$paramlien);
-	
-	$paramlien = array();
-	$content.= "<br>".$this->pi_linkToPage(get_string_language_sql("ws_go_page_choose_label",$mylanguage),98,'',$paramlien);
-	$content.= "<br>".get_string_language_sql("ws_uuid_specimen",$mylanguage)  ." : ".$lobervation["uuid_specimen"]."<br/><br/>\n";
-    
-    }
-         
-         */
 		
 		$content .= $this->getFooterHtml();
 		return $content;
@@ -455,30 +433,39 @@ class iHerbarium {
     {
         global $wpdb;
         
+        $finligne = "<br>";
         $results = $this->getDeterminationArray($idObs);
         
         $content = "";
         foreach ($results as $row)
         {
-            $nom_commun=$row["nom_commun"];
-            $nom_scientifique=$row["nom_scientifique"];
-            $date=$row["date"];
             
-            list( $jour,$mois, $annee,) = explode("-", $date);
+            list( $jour,$mois, $annee,) = explode("-", $row["date"]);
             $content.= $jour."-".$mois."-".$annee;
             
-            if($nom_commun!=""){
-                $content.= " nom commun : " .$nom_commun . " ";
+            if($row["nom_commun"]!=""){
+                $content.= " nom commun : " .$row["nom_commun"]. " ";
             }
-            
+            if($row["nom_scientifique"]!=""){
+                $content.= " nom scientifique : " .$row["nom_scientifique"]. " ";
+            }
+            if($row["genre"]!=""){
+                $content.= ", " .$row["genre"]. " ";
+            }
+            if($row["famille"]!=""){
+                $content.= ", " .$row["famille"]. " ";
+            }
+            $content.= $finligne;
             
             if($row["precision_level"]!=0)
             {
-                $content.=' <img src="/interface/target_'.$row["precision_level"].'.gif" width=24 title="'.$row["precisioncomment"].'"> ';
+                //$content.=' <img src="/interface/target_'.$row["precision_level"].'.gif" width=24 title="'.$row["precisioncomment"].'"> ';
+                $content.=$row["precisioncomment"].$finligne;
             }
             if($row["certitude_level"]!=0)
             {/*get_string_language_sql('aboutcertitude'.$finchamps,$mylanguage)*/
-                $content.=' <img src="/interface/certitude_'.$row["certitude_level"].'.gif"  title="'.$row["certitude_comment"].'"> ';
+               // $content.=' <img src="/interface/certitude_'.$row["certitude_level"].'.gif"  title="'.$row["certitude_comment"].'"> ';
+                $content.=$row["certitude_comment"].$finligne;
             }
         
             $idDetermin = $row["id"];
@@ -535,14 +522,14 @@ class iHerbarium {
             $content.=$row_determination["comment"];
         }
         
-        if($texteseul!=2)
+       /* if($texteseul!=2)
         {
             $content.= $finligne;
             $content.= $finligne;
-        }
+        }*/
         
-        $content.= $finligne;
-        $content.= $finligne;
+       /* $content.= $finligne;
+        $content.= $finligne;*/
         
         return $content;
         
