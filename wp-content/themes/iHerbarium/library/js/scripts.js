@@ -117,6 +117,14 @@ jQuery(document).ready(function($) {
   		}
   	});
   	
+  	$('#contentmobile').scroll(function(){
+  		if ($(this).scrollTop() > 100) {
+  			$('.scrollToTop').fadeIn();
+  		} else {
+  			$('.scrollToTop').fadeOut();
+  		}
+  	});
+  	
   	$('#content').scroll(function(){
   		if ($(this).scrollTop() > 100) {
   			$('.scrollToTop').fadeIn();
@@ -127,7 +135,7 @@ jQuery(document).ready(function($) {
   	
   	//Click event to scroll to top
   	$('.scrollToTop').click(function(){
-  		$('html, body,#content').animate({scrollTop : 0},800);
+  		$('html, body,#content,#contentmobile').animate({scrollTop : 0},800);
   		return false;
   	});
 	

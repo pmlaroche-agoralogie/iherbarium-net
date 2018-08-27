@@ -1492,7 +1492,8 @@ html.js {
     z-index: 200;
   }
 
-.site-content, #content {
+/*.site-content, #content {*/
+#contentmobile{
     position: absolute;
     top: 50px;
     right: 0;
@@ -1914,7 +1915,8 @@ header nav[role=navigation] {
   .navmobile,.bandeau-mobile{display:none}
   .navclassic{display:block}
   
-  .site-content, #content {
+  /*.site-content, #content {*/
+  #contentmobile{
     position: relative;
     top: initial;
     right: initial;
