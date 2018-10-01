@@ -482,12 +482,12 @@ class iHerbarium {
             
             $content.= $finligne;
                 
-            $sql = "SELECT * 
+           /* $sql = "SELECT * 
                         FROM iherba_determination_reaction 
                         WHERE id_determination = $idDetermin 
                             AND disabled = 0 ";
             $results2 = $wpdb->get_results( $sql, ARRAY_A );
-            if( mysql_num_rows($results2)>0)
+            if (sizeof($results2)>0)
             {
                 $content.= " ( ";
                 $first_iteration = 1;
@@ -506,7 +506,7 @@ class iHerbarium {
                     }
                 }
                 $content.= " ) ";
-            }
+            }*/
         }
         
         if($row["id_cases"]!=0){
