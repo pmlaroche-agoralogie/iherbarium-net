@@ -13,6 +13,7 @@
 			</footer> <!-- end footer -->
 		
 		<div class="site-cache" id="site-cache"></div>
+		</div><!-- end #contentmobile -->
 		</div> <!-- end .site-pusher -->
 		</div> <!-- end #container -->
 		

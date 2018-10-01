@@ -85,3 +85,4 @@
 				</div> <!-- end #inner-header -->
 
 			</header> <!-- end header -->
+			<div id="contentmobile">
