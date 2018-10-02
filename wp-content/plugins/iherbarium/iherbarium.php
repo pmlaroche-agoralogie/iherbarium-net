@@ -276,33 +276,36 @@ class iHerbarium {
               </a>';
         }	  
 
-		$content .= '<br><br>Cette observation a été localisée à la latitude '.round($results[0]['latitude'], 4).' 
-                        et la longitude '.round($results[0]['longitude'],4).'<br><br>';
+        if ($results[0]['latitude']!=0 OR $results[0]['longitude']!=0)
+        {
+        		$content .= '<br><br>Cette observation a été localisée à la latitude '.round($results[0]['latitude'], 4).' 
+                                et la longitude '.round($results[0]['longitude'],4).'<br><br>';
         
-		$content .= '
-        <div id="mapDiv" style=" height: 500px"></div>
-        <script>
-            // position we will use later
-            var lat = '.$results[0]['latitude'].';
-            var lon = '.$results[0]['longitude'].';
-     
-            // initialize map
-            map = L.map("mapDiv").setView([lat, lon], 13);
-     
-            // set map tiles source
-            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
-                maxZoom: 18,
-            }).addTo(map);
-     
-            // add marker to the map
-            marker = L.marker([lat, lon]).addTo(map);
-     
-            // add popup to the marker
-            //marker.bindPopup("<b>ACME CO.</b><br />This st. 48<br />New York").openPopup();
-        </script>
-        <br/>
-        <br/>';
+     		$content .= '
+            <div id="mapDiv" style=" height: 500px"></div>
+            <script>
+                // position we will use later
+                var lat = '.$results[0]['latitude'].';
+                var lon = '.$results[0]['longitude'].';
+         
+                // initialize map
+                map = L.map("mapDiv").setView([lat, lon], 13);
+         
+                // set map tiles source
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
+                    maxZoom: 18,
+                }).addTo(map);
+         
+                // add marker to the map
+                marker = L.marker([lat, lon]).addTo(map);
+         
+                // add popup to the marker
+                //marker.bindPopup("<b>ACME CO.</b><br />This st. 48<br />New York").openPopup();
+            </script>
+            <br/>
+            <br/>';
+        }
 		
 		//details photos
 		$content.= $this->getDetailsObsHTML($idObs);
