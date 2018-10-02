@@ -304,6 +304,9 @@ class iHerbarium {
         <br/>
         <br/>';
 		
+		//details photos
+		$content.= $this->getDetailsObsHTML($idObs);
+		
 		$content.= " UUID de l'observation: ".$results[0]["uuid_observation"]."<br><br>";
         
 		
@@ -334,7 +337,7 @@ class iHerbarium {
         $sql = "SELECT * FROM iherba_observations ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         
-        if (sizeof($results)==01)
+        if (sizeof($results)==0)
         {
             echo "Erreur dans la récupération des observations";
             die();
@@ -533,6 +536,93 @@ class iHerbarium {
         
         return $content;
         
+    }
+    
+    function getDetailsObsHTML($idObs)
+    {
+        global $wpdb;
+        
+        $content = "";
+        $langue= "fr";
+        
+        $sql="SELECT DISTINCT iherba_roi.id,iherba_tags.tag,iherba_roi_answers_pattern.id AS lineid 
+                                    FROM iherba_roi_answers_pattern,iherba_roi,iherba_photos,iherba_tags,iherba_roi_tag
+                                    WHERE iherba_photos.id_obs=".$idObs." 
+                                        AND iherba_photos.idphotos=iherba_roi.id_photo 
+                                        AND iherba_roi.id=iherba_roi_answers_pattern.id_roi
+                                        AND iherba_tags.id_tag = iherba_roi_tag.id_tag
+                                        AND iherba_roi_tag.id_roi = iherba_roi.id 
+                                        GROUP BY iherba_roi.id";
+        
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+        
+        $liste_roi= array();
+        $liste_roi_tag= array();
+        if(sizeof($results)>0)
+        {
+            foreach($results as $ligne)
+            {
+                $liste_roi[] = $ligne['id'];
+                $liste_roi_tag[] = $ligne['tag'];
+            }
+        }
+        
+        foreach($liste_roi as $key => $value)
+        {
+            $content .= '<img src="'.$this->domaine_photo.'/medias/roi_vignettes/roi_'.$value.'.jpg" alt="'.$liste_roi_tag[$key] .'  : '.$libellespeciesname.'" >';
+            $sql="SELECT iherba_roi_answers_pattern.id_roi,
+	                                        iherba_roi_answers_pattern.id_question,
+                                            iherba_roi_answers_pattern.id_answer_most_common,
+                                            iherba_roi_answers_pattern.prob_most_common,	
+                                            iherba_roi_answers_pattern.id_just_less_common,	
+                                            iherba_roi_answers_pattern.prob_just_less,
+                                            iherba_question.choice_explicitation_one , 
+                                            iherba_question.choice_explicitation_two_seldom , 
+                                            iherba_question.choice_explicitation_two_often , 
+                                            iherba_question.choice_detail, 
+                                            iherba_roi_answers_pattern.id AS lineid 
+                                    FROM iherba_roi_answers_pattern,iherba_roi,iherba_photos,iherba_question
+                                    WHERE iherba_roi.id = ".$value." 
+                                        AND iherba_photos.id_obs=".$idObs." 
+                                        AND iherba_photos.idphotos=iherba_roi.id_photo 
+                                        AND iherba_roi.id=iherba_roi_answers_pattern.id_roi 
+                                        AND iherba_question.id_langue='".$langue."'
+                                        AND iherba_roi_answers_pattern.id_question = iherba_question.id_question  ";
+            //echo $sql;
+                //$content .= "<!-- $requete_lignes_pattern -->";
+                $results = $wpdb->get_results( $sql, ARRAY_A );
+                if(sizeof($results)>0)
+                {
+                    $content .= "<br>Cette region d'image a été qualifiée comme suit : <br>";
+                    foreach ($results as $ligne)
+                    {
+                        if($ligne['choice_detail']=="")return "<!-- warning no text for question ".$ligne['id_question']." -->";
+                        {
+                            $reponsespossibles = explode("!",$ligne['choice_detail']);
+                        }
+                        
+                        if($ligne[prob_most_common]>90)
+                        {
+                            $textexplication = $ligne['choice_explicitation_one'];
+                        }
+                        else
+                        {
+                            if($ligne[prob_most_common]>80)
+                                $textexplication = $ligne['choice_explicitation_two_seldom'];
+                                else
+                                    $textexplication = $ligne['choice_explicitation_two_often'];
+                        }
+                            
+                        $textexplication = str_replace("#1",$reponsespossibles[$ligne['id_answer_most_common']],$textexplication);
+                        $textexplication = str_replace("#2",$reponsespossibles[$ligne['id_just_less_common']],$textexplication);
+                        
+                        $content .= $textexplication."<br/>";
+                        //$content .= build_response($ligne,$cibleaction,$show_delete_button)."<br>";
+                    }
+                }
+        }
+        
+        return $content."<br/>";
     }
     
     function getEtiquetteHTML($idObs,$size)
