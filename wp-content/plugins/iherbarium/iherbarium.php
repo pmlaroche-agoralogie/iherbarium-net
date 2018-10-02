@@ -438,6 +438,8 @@ class iHerbarium {
     function getDeterminationHTML($idObs)
     {
         global $wpdb;
+        global $nom_scientifique;
+        $nom_scientifique = '';
         
         $finligne = "<br>";
         $results = $this->getDeterminationArray($idObs);
@@ -454,12 +456,15 @@ class iHerbarium {
             }
             if($row["nom_scientifique"]!=""){
                 $content.= " nom scientifique : " .$row["nom_scientifique"]. " ";
+                $nom_scientifique = "nom scientifique : " .$row["nom_scientifique"]. " ";
             }
             if($row["genre"]!=""){
                 $content.= ", " .$row["genre"]. " ";
+                $nom_scientifique .= ", " .$row["genre"]. " ";
             }
             if($row["famille"]!=""){
                 $content.= ", " .$row["famille"]. " ";
+                $nom_scientifique .=  ", " .$row["famille"]. " ";
             }
             $content.= $finligne;
             
@@ -544,6 +549,7 @@ class iHerbarium {
     function getDetailsObsHTML($idObs)
     {
         global $wpdb;
+        global $nom_scientifique;
         
         $content = "";
         $langue= "fr";
@@ -572,7 +578,7 @@ class iHerbarium {
         
         foreach($liste_roi as $key => $value)
         {
-            $content .= '<img src="'.$this->domaine_photo.'/medias/roi_vignettes/roi_'.$value.'.jpg" alt="'.$liste_roi_tag[$key] .'  : '.$libellespeciesname.'" >';
+            $content .= '<img src="'.$this->domaine_photo.'/medias/roi_vignettes/roi_'.$value.'.jpg" alt="'.$liste_roi_tag[$key] .'  : '.$nom_scientifique.'" >';
             $sql="SELECT iherba_roi_answers_pattern.id_roi,
 	                                        iherba_roi_answers_pattern.id_question,
                                             iherba_roi_answers_pattern.id_answer_most_common,
