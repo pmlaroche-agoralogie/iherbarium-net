@@ -319,6 +319,7 @@ class iHerbarium {
             <br/>';
      		$radius = '0.04';
      		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/">Carte</a>';
+     		$content .= "<br><br>";
         }
 		
 		//details photos
@@ -384,8 +385,11 @@ class iHerbarium {
         if ($offset != 0)
             $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
         if ( ($total%$limit) > $offset+1)
+        {
             //$content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
+            $content .= "&nbsp;&nbsp;&nbsp;&nbsp;";
             $content .= '<a href="'.home_url( $wp->request ).'/observations/'.($offset+1).'/">Suivant</a>';
+        }
             
         return $content;
     }
