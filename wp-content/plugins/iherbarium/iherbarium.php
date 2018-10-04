@@ -43,6 +43,7 @@ class iHerbarium {
             'observation/photo/large/(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto='.$wp_rewrite->preg_index(1),
             'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
             'choix-dune-etiquette/herbier-support(.*)' => 'index.php?herbier=1',
+            'carte/longitude/(.+)/latitude/(.+)/radius/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3),
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -59,6 +60,9 @@ class iHerbarium {
         $qvars[] = 'listeobs';
         $qvars[] = 'numero_observation';
         $qvars[] = 'template';
+        $qvars[] = 'longitude';
+        $qvars[] = 'latitude';
+        $qvars[] = 'radius';
         return $qvars;
     }
     
@@ -193,6 +197,14 @@ class iHerbarium {
             
             exit;
         }
+        
+        //CARTE
+        if ($wp_query->get('ihaction') == "getcarte") 
+        {
+            echo $this->getCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
+            exit;
+
+        }
         if ($wp_query->get('herbier')) {
             echo $this->getEtiquetteHTML($wp_query->get('numero_observation'),$wp_query->get('template'));
             exit;
@@ -259,7 +271,7 @@ class iHerbarium {
         $content .= '<div class="contenu">';
         $content .= $this->getDeterminationHTML($idObs);
         
-        $content .= 'Commentaires : '.$results[0]['commentaires'].'<br><br>';
+        $content .= 'Commentaires : '.utf8_decode($results[0]['commentaires']).'<br><br>';
         $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
         $content .= '<br>';
         $content .= 'Cette observation a été déposée le : '.$results[0]['date_depot'].'<br>';
@@ -305,6 +317,8 @@ class iHerbarium {
             </script>
             <br/>
             <br/>';
+     		$radius = '0.04';
+     		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/">Carte</a>';
         }
 		
 		//details photos
@@ -698,6 +712,96 @@ class iHerbarium {
                 ;
         }
         return $output; 
+    }
+    
+    function getCarteHTML($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+        $content = "";
+        
+        $content = $this->getHeaderHtml();
+        
+        $sql = "SELECT iherba_observations.idobs,
+                    iherba_observations.longitude,
+                    iherba_observations.latitude,
+                    iherba_observations.commentaires,
+                    iherba_photos.nom_photo_final,
+                    iherba_observations.deposit_timestamp, 
+                    iherba_observations.url_rewriting_fr, 
+                    iherba_observations.url_rewriting_en 
+                FROM iherba_photos,iherba_observations 
+                WHERE iherba_observations.latitude !=0 
+                    AND iherba_observations.idobs=iherba_photos.id_obs 
+                    AND iherba_observations.public='oui'
+                    AND iherba_observations.latitude >".($latitude-$radius). "
+                    AND iherba_observations.latitude < ".($latitude+$radius). "
+                    AND iherba_observations.longitude > ".($longitude-$radius). "
+                    AND iherba_observations.longitude < ".($longitude+$radius). "
+                GROUP BY iherba_observations.idobs 
+                ORDER BY iherba_observations.idobs DESC 
+                LIMIT 0,250;";
+        
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+        if(sizeof($results)>0)
+        {
+            $content .= '
+            <div id="mapDiv" style=" height: 900px"></div>
+            <script>
+                // position we will use later
+                var lat = '.$results[0]['latitude'].';
+                var lon = '.$results[0]['longitude'].';
+                    
+                // initialize map
+                map = L.map("mapDiv").setView(['.$latitude.', '.$longitude.'], 13);
+                    
+                // set map tiles source
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: "&copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors",
+                    maxZoom: 18,
+                }).addTo(map);
+                    
+                // add markers to the map';
+                
+            foreach ($results as $donnees)
+            {
+                
+                $nc = '';
+                $ns = '';
+                
+                $sql = "SELECT nom_commun,nom_scientifique FROM iherba_determination WHERE id_obs = ".$donnees['idobs']." ORDER BY date ASC";
+                $results_nom=$wpdb->get_results( $sql, ARRAY_A );
+                if(sizeof($results_nom)>0)
+                {
+                    foreach ($results_nom as $donnees_nom)
+                    {
+                        $nc = $donnees_nom['nom_commun'];
+                        $ns = $donnees_nom['nom_scientifique'];
+                    }
+                }
+
+                $description = '<img src=\"'.$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'].'\" style=\"width:100px;border-radius:5px;\" /><br />';
+                $description .= '<p><a target=\"_blank\" href=\"'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'\">Observation numéro :  '.$donnees['idobs'].'</a><br />';
+                if ($nc != ''){
+                    $description .= '<strong>'.$nc.'</strong><br />';
+                }
+                if ($ns != ''){
+                    $description .= '<strong>'.$ns.'</strong><br />';
+                }
+                $description .= 'Transmise le : '.$donnees['deposit_timestamp'] .'<br />';
+                $description .= 'Note : '.str_replace("\n"," ",str_replace('"'," ",str_replace("\r"," ",str_replace("'"," ",utf8_decode($donnees['commentaires']))))).'</p>';
+                
+                
+                
+                $content .= '
+                    marker = L.marker(['.$donnees['latitude'].','.$donnees['longitude'].']).addTo(map).bindPopup("'.$description.'");';
+            }
+            $content .= '
+            </script>
+            <br/>
+            <br/>';
+        }
+        $content .= $this->getFooterHtml();
+        return $content;
     }
     
     
