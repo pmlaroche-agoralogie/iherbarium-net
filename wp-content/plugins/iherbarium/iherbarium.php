@@ -725,6 +725,8 @@ class iHerbarium {
         
         $content = $this->getHeaderHtml();
         
+        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius."</h1>";
+        
         $sql = "SELECT iherba_observations.idobs,
                     iherba_observations.longitude,
                     iherba_observations.latitude,
