@@ -94,6 +94,20 @@ class iHerbarium {
             $page_obs = (int)$wp_query->get('listeobs') + 1;
             $title = 'iHerbarium - Observations - Page '.$page_obs;
         }
+        if ($wp_query->get('ihaction') == "getcarte")
+        {
+            $title = 'iHerbarium - Carte - latitude '.$wp_query->get('latitude').' / longitude '.$wp_query->get('longitude').' / rayon '.$wp_query->get('radius');
+        }
+        
+        if ($wp_query->get('herbier')) {
+            $title = 'iHerbarium - Etiquette Herbier - '.$wp_query->get('template').' - Observation  n° '.$wp_query->get('numero_observation');
+        }
+        
+        if ($wp_query->get('ihaction') == "getphoto")
+        {
+            $this->getIdsFromPhoto($idPhoto,$idObs);
+            $title = 'iHerbarium - Photo n° '.$idPhoto.' - Observation  n° '.$idObs;
+        }
         
         if ($title == ''){
             //recup original
@@ -121,6 +135,19 @@ class iHerbarium {
         if ($wp_query->get('listeobs') != "" || strpos($wp_query->post->post_content,'[iHerbarium]')) {
             $page_obs = (int)$wp_query->get('listeobs') + 1;
             $desc = 'iHerbarium - Observations - Page '.$page_obs;
+        }
+        if ($wp_query->get('ihaction') == "getcarte") 
+        {
+            $desc = 'iHerbarium - Carte - latitude '.$wp_query->get('latitude').' / longitude '.$wp_query->get('longitude').' / rayon '.$wp_query->get('radius');
+        }
+        
+        if ($wp_query->get('herbier')) {
+            $desc = 'iHerbarium - Etiquette Herbier - '.$wp_query->get('template').' - Observation  n° '.$wp_query->get('numero_observation');
+        }
+        if ($wp_query->get('ihaction') == "getphoto")
+        {
+            $this->getIdsFromPhoto($idPhoto,$idObs);
+            $desc = 'iHerbarium - Photo n° '.$idPhoto.' - Observation  n° '.$idObs;
         }
         
         /*if ($desc == ''){
@@ -189,27 +216,7 @@ class iHerbarium {
         if ($wp_query->get('ihaction') == "getphoto") 
         //if (strpos($_SERVER['REQUEST_URI'],'/scripts/large.php') !== false)
         {
-            if ($wp_query->get('idphoto') == 'old')
-                $getIdPhoto = $wp_query->get('name');
-            else 
-                $getIdPhoto = $wp_query->get('idphoto');
-            
-                echo $getIdPhoto;
-                echo $wp_query->get('idPhoto');
-            
-           // $amyid=explode('-',$getIdPhoto);
-            $amyid=preg_replace('/[.-][^.-]{1,4}/','',$getIdPhoto);
-            $amyid=explode('_',$amyid);
-            if (strpos($getIdPhoto,'photo') !== false)
-            {
-                $idPhoto = (int)$amyid[1];
-                $idObs = (int)$amyid[3];
-            }
-            else 
-            {          
-                $idPhoto = (int)$amyid[0];
-                $idObs = (int)$amyid[1];
-            }
+            $this->getIdsFromPhoto($idPhoto,$idObs);
             
             echo $this->getPhotoHtml($idPhoto,$idObs);    
             
@@ -241,6 +248,31 @@ class iHerbarium {
         // header( 'Content-type: application/json' );
         
         echo json_encode( $output );
+    }
+    
+    function getIdsFromPhoto(&$idPhoto,&$idObs)
+    {
+        global $wp_query;
+        if ($wp_query->get('idphoto') == 'old')
+            $getIdPhoto = $wp_query->get('name');
+            else
+                $getIdPhoto = $wp_query->get('idphoto');
+                
+                
+                // $amyid=explode('-',$getIdPhoto);
+                $amyid=preg_replace('/[.-][^.-]{1,4}/','',$getIdPhoto);
+                $amyid=explode('_',$amyid);
+                if (strpos($getIdPhoto,'photo') !== false)
+                {
+                    $idPhoto = (int)$amyid[1];
+                    $idObs = (int)$amyid[3];
+                }
+                else
+                {
+                    $idPhoto = (int)$amyid[0];
+                    $idObs = (int)$amyid[1];
+                }
+        
     }
     
     function getHeaderHtml()
@@ -847,6 +879,7 @@ add_filter('query_vars',array($iHerbarium, 'add_query_vars'));
 // Could probably run it once as long as it isn't going to change or check the
 // $wp_rewrite rules to see if it's active.
 add_filter('admin_init', array($iHerbarium, 'flush_rewrite_rules'));
-add_filter('wp_title', array($iHerbarium, 'getTitleiHerbarium'));
+//add_filter('wp_title', array($iHerbarium, 'getTitleiHerbarium'));
+add_filter('wpseo_title', array($iHerbarium, 'getTitleiHerbarium'));
 add_filter( 'wpseo_metadesc', array($iHerbarium, 'getDesciHerbarium'));
 add_action( 'template_redirect', array($iHerbarium, 'template_redirect_intercept') );
