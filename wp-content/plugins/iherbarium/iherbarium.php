@@ -17,6 +17,7 @@ class iHerbarium {
     public function __construct()
     {
         add_shortcode('iHerbarium', array($this, 'ihb_shortcode'));
+        add_shortcode('iHerbariumCarte', array($this, 'ihb_carte_shortcode'));
     }
     
     function activate() {
@@ -27,6 +28,23 @@ class iHerbarium {
     public function ihb_shortcode()
     {
         return $this->getListeObsHtml();
+    }
+    
+    public function ihb_carte_shortcode($atts)
+    {
+        $content = "";
+        if (isset($atts['longitude']) && isset($atts['latitude']) )
+        {
+            $longitude = $atts['longitude'];
+            $latitude = $atts['latitude'];
+            if (isset($atts['radius']))
+                $radius = $atts['radius'];
+            else 
+                $radius = 0.04;
+           $content .= $this->getCarteHTML($longitude,$latitude,$radius);
+        }
+         
+        return $content;
     }
     
     function flush_rewrite_rules() {
@@ -201,7 +219,7 @@ class iHerbarium {
         //CARTE
         if ($wp_query->get('ihaction') == "getcarte") 
         {
-            echo $this->getCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
+            echo $this->getPageCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
             exit;
 
         }
@@ -718,15 +736,20 @@ class iHerbarium {
         return $output; 
     }
     
+    function getPageCarteHTML($longitude,$latitude,$radius)
+    {
+        $content = $this->getHeaderHtml();
+        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius."</h1>";
+        $content .= $this->getCarteHTML($longitude,$latitude,$radius);
+        $content .= $this->getFooterHtml();
+        return $content;
+    }
+    
     function getCarteHTML($longitude,$latitude,$radius)
     {
         global $wpdb;
         $content = "";
-        
-        $content = $this->getHeaderHtml();
-        
-        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius."</h1>";
-        
+
         $sql = "SELECT iherba_observations.idobs,
                     iherba_observations.longitude,
                     iherba_observations.latitude,
@@ -739,10 +762,10 @@ class iHerbarium {
                 WHERE iherba_observations.latitude !=0 
                     AND iherba_observations.idobs=iherba_photos.id_obs 
                     AND iherba_observations.public='oui'
-                    AND iherba_observations.latitude >".($latitude-$radius). "
-                    AND iherba_observations.latitude < ".($latitude+$radius). "
-                    AND iherba_observations.longitude > ".($longitude-$radius). "
-                    AND iherba_observations.longitude < ".($longitude+$radius). "
+                    AND iherba_observations.latitude >".((float)$latitude-(float)$radius). "
+                    AND iherba_observations.latitude < ".((float)$latitude+(float)$radius). "
+                    AND iherba_observations.longitude > ".((float)$longitude-(float)$radius). "
+                    AND iherba_observations.longitude < ".((float)$longitude+(float)$radius). "
                 GROUP BY iherba_observations.idobs 
                 ORDER BY iherba_observations.idobs DESC 
                 LIMIT 0,250;";
@@ -806,11 +829,9 @@ class iHerbarium {
             <br/>
             <br/>';
         }
-        $content .= $this->getFooterHtml();
+
         return $content;
     }
-    
-    
     
 }
 
