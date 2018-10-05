@@ -489,7 +489,7 @@ class iHerbarium {
             else
                 $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
         }
-        if ( ($total%$limit) > $offset+1)
+        if ( ($total/$limit) > $offset)
         {
             if ($offset != 0)
                 $content .= "&nbsp;&nbsp;&nbsp;&nbsp;";
