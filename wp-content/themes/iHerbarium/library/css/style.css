@@ -1513,6 +1513,7 @@ header.site-header {background-color:#013b1b;z-index: 500;
 .fiche_liste{border:2px solid #013b1b;border-radius:5px;margin-bottom:10px;}
 .fiche_liste .header{color:#fff;margin-top:0;padding:10px;background:#013b1b;}
 .fiche_liste h2{padding:0 60px 0 0;background: url(../images/logo.png) no-repeat right center #013b1b;background-size:contain;margin:0;font-size:18px}
+.fiche_liste h2 a, .fiche_liste h2 a:hover, .fiche_liste h2 a:active, .fiche_liste h2 a:visited,.fiche_liste h2 a:focus{color:white;}
 .fiche_liste .contenu{padding:10px;background:#ecfaf1;border-radius:5px;}
 .fiche_liste .contenu .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
 	margin: 5px 5px 5px 0;border-radius:5px;}

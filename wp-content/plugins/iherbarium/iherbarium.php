@@ -62,6 +62,8 @@ class iHerbarium {
             'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
             'choix-dune-etiquette/herbier-support(.*)' => 'index.php?herbier=1',
             'carte/longitude/(.+)/latitude/(.+)/radius/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3),
+            'utilisateur/(.+)/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1).'&offset='.$wp_rewrite->preg_index(2),
+            'utilisateur/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1),
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -81,6 +83,8 @@ class iHerbarium {
         $qvars[] = 'longitude';
         $qvars[] = 'latitude';
         $qvars[] = 'radius';
+        $qvars[] = 'iduser';
+        $qvars[] = 'offset';
         return $qvars;
     }
     
@@ -109,6 +113,11 @@ class iHerbarium {
             $title = 'iHerbarium - Photo n° '.$idPhoto.' - Observation  n° '.$idObs;
         }
         
+        if ($wp_query->get('iduser'))
+        {
+            $title = 'iHerbarium - Observations de l\'utilisateur '.$wp_query->get('iduser');
+        }
+        
         if ($title == ''){
             //recup original
             /** TODO: besoin de $post?*/
@@ -124,6 +133,17 @@ class iHerbarium {
         $results = $wpdb->get_results( $sql , ARRAY_A );
         $wp_user=get_user_by('ID',$results[0]['id_wp']);
         return $wp_user->data->display_name;
+    }
+    
+    function getIDbyUUID($uuid){
+        global $wp_query;
+        global $wpdb;
+        $sql = "SELECT id.id_typo
+                        FROM iherba__users_typo_wp AS id
+                        LEFT JOIN wp_users AS wp ON id.id_wp = wp.ID
+                        WHERE wp.user_login = '".$uuid."'";
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        return $results[0]['id_typo'];
     }
     
     function getDesciHerbarium() {
@@ -148,6 +168,11 @@ class iHerbarium {
         {
             $this->getIdsFromPhoto($idPhoto,$idObs);
             $desc = 'iHerbarium - Photo n° '.$idPhoto.' - Observation  n° '.$idObs;
+        }
+        
+        if ($wp_query->get('iduser'))
+        {
+            $desc = 'iHerbarium - Observations de l\'utilisateur '.$wp_query->get('iduser');
         }
         
         /*if ($desc == ''){
@@ -232,6 +257,22 @@ class iHerbarium {
         }
         if ($wp_query->get('herbier')) {
             echo $this->getEtiquetteHTML($wp_query->get('numero_observation'),$wp_query->get('template'));
+            exit;
+        }
+        
+        //USER
+        if ($wp_query->get('iduser'))
+        {
+            if (strpos($_SERVER['REQUEST_URI'],'utilisateur/'))
+            {
+                $url = explode('utilisateur/',$_SERVER['REQUEST_URI']);
+                $this->setCurrentPage($url[0]);
+            }
+            //print_r($wp_query->query_vars);
+            //print_r($_SERVER);
+            include ('tpl/header.php');
+            echo $this->getListeObsHtml(10,(int)$wp_query->get('offset'),$wp_query->get('iduser'));
+            include ('tpl/footer.php');
             exit;
         }
     }
@@ -393,16 +434,25 @@ class iHerbarium {
 		return $content;
     }
     
-    function getListeObsHtml($limit = 10, $offset = 0)
+    function getListeObsHtml($limit = 10, $offset = 0, $user = '')
     {
         global $wpdb;
         global $wp;
         
-        $sql = "SELECT idobs FROM iherba_observations";
+        $where = '';
+        
+        if ($user != '')
+        {
+            $user_id = $this->getIDbyUUID($user);
+            
+            $where = ' WHERE id_user = '.$user_id;
+        }
+        
+        $sql = "SELECT idobs FROM iherba_observations".$where;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         $total = sizeof($results);
         
-        $sql = "SELECT * FROM iherba_observations ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
+        $sql = "SELECT * FROM iherba_observations".$where." ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         
         if (sizeof($results)==0)
@@ -415,7 +465,7 @@ class iHerbarium {
         {
             //TODO: fonction get user affichage
             $content .= '<div class="fiche_liste">';
-            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : '.$this->getUUIDbyID($row['id_user']).'</h2></div>';
+            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($row['id_user']).'/">'.$this->getUUIDbyID($row['id_user']).'</a></h2></div>';
             $content .= '<div class="contenu">Cliquez sur une image pour voir le détail.<br>';
             
             
@@ -433,12 +483,20 @@ class iHerbarium {
             $content .= '</div></div>';
         }
         if ($offset != 0)
-            $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
+        {
+            if ($user != '')
+                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset-1).'/">Précédent</a>';
+            else
+                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
+        }
         if ( ($total%$limit) > $offset+1)
         {
-            //$content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
-            $content .= "&nbsp;&nbsp;&nbsp;&nbsp;";
-            $content .= '<a href="'.home_url( $wp->request ).'/observations/'.($offset+1).'/">Suivant</a>';
+            if ($offset != 0)
+                $content .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+            if ($user != '')
+                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset+1).'/">Suivant</a>';
+            else
+                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
         }
             
         return $content;
