@@ -12,7 +12,7 @@
 include_once(plugin_dir_path( __FILE__ ).'utils.php');
 
 class iHerbarium {
-    public $domaine_photo = "http://migration.iherbarium.fr";
+    public $domaine_photo = "http://medias.iherbarium.fr";
     
     public function __construct()
     {
@@ -445,14 +445,14 @@ class iHerbarium {
         {
             $user_id = $this->getIDbyUUID($user);
             
-            $where = ' WHERE id_user = '.$user_id;
+            $where = ' AND id_user = '.$user_id;
         }
         
-        $sql = "SELECT idobs FROM iherba_observations".$where;
+        $sql = "SELECT idobs FROM iherba_observations WHERE public='oui'".$where;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         $total = sizeof($results);
         
-        $sql = "SELECT * FROM iherba_observations".$where." ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
+        $sql = "SELECT * FROM iherba_observations WHERE public='oui'".$where." ORDER BY date_depot DESC, idobs DESC LIMIT ".$offset*$limit.",".$limit;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         
         if (sizeof($results)==0)
