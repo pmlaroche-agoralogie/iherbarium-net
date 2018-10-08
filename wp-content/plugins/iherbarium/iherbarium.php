@@ -132,6 +132,15 @@ class iHerbarium {
         $sql = "SELECT id_wp FROM iherba__users_typo_wp WHERE id_typo = ".$id_typo;
         $results = $wpdb->get_results( $sql , ARRAY_A );
         $wp_user=get_user_by('ID',$results[0]['id_wp']);
+        return $wp_user->data->user_nicename;
+    }
+    
+    function getDisplayNamebyID($id_typo){
+        global $wp_query;
+        global $wpdb;
+        $sql = "SELECT id_wp FROM iherba__users_typo_wp WHERE id_typo = ".$id_typo;
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        $wp_user=get_user_by('ID',$results[0]['id_wp']);
         return $wp_user->data->display_name;
     }
     
@@ -465,7 +474,7 @@ class iHerbarium {
         {
             //TODO: fonction get user affichage
             $content .= '<div class="fiche_liste">';
-            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($row['id_user']).'/">'.$this->getUUIDbyID($row['id_user']).'</a></h2></div>';
+            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($row['id_user']).'/">'.$this->getDisplayNamebyID($row['id_user']).'</a></h2></div>';
             $content .= '<div class="contenu">Cliquez sur une image pour voir le détail.<br>';
             
             
@@ -778,8 +787,8 @@ class iHerbarium {
         if ($nameObs == '')
             $nameObs = '--';
         
-        $authorRecolt = $this->getUUIDbyID($row['id_user']);
-        $authorDeterminObs = $this->getUUIDbyID($row2['id_user']);
+            $authorRecolt = $this->getDisplayNamebyID($row['id_user']);
+            $authorDeterminObs = $this->getDisplayNamebyID($row2['id_user']);
         if ( $row2['date'] != '')
             $authorDeterminObs .= " (".$row2['date'].") ";;
         
