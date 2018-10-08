@@ -388,7 +388,7 @@ class iHerbarium {
               </a>';
         }	  
 
-        if ($results[0]['latitude']!=0 OR $results[0]['longitude']!=0)
+        if (($results[0]['latitude']!=0 OR $results[0]['longitude']!=0) AND $results[0]['public']=='oui')
         {
         		$content .= '<br><br>Cette observation a été localisée à la latitude '.round($results[0]['latitude'], 4).' 
                                 et la longitude '.round($results[0]['longitude'],4).'<br><br>';
