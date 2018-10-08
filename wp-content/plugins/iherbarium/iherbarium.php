@@ -374,7 +374,8 @@ class iHerbarium {
         $content .= 'Commentaires : '.utf8_decode($results[0]['commentaires']).'<br><br>';
         $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
         $content .= '<br>';
-        $content .= 'Cette observation a été déposée le : '.$results[0]['date_depot'].'<br>';
+        $content .= 'Cette observation a été déposée le '.$results[0]['date_depot'].' par l\'utilisateur : 
+<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($results[0]['id_user']).'/">'.$this->getDisplayNamebyID($results[0]['id_user']).'</a><br>';
         $content .= 'Voici les images constituant cette observation : <br>';
 		
 		$sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$idObs;
@@ -889,7 +890,7 @@ class iHerbarium {
                 }).addTo(map);
                     
                 // add markers to the map';
-                
+            $arrayMarker ="";
             foreach ($results as $donnees)
             {
                 
@@ -922,7 +923,11 @@ class iHerbarium {
                 
                 $content .= '
                     marker = L.marker(['.$donnees['latitude'].','.$donnees['longitude'].']).addTo(map).bindPopup("'.$description.'");';
+                $arrayMarker .='['.$donnees['latitude'].','.$donnees['longitude'].'],';
             }
+            $content .='
+                map.fitBounds(['.$arrayMarker.']);';
+
             $content .= '
             </script>
             <br/>
