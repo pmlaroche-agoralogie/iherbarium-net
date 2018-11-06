@@ -18,6 +18,7 @@ class iHerbarium {
     {
         add_shortcode('iHerbarium', array($this, 'ihb_shortcode'));
         add_shortcode('iHerbariumCarte', array($this, 'ihb_carte_shortcode'));
+        add_shortcode('iHerbariumListe', array($this, 'ihb_liste_shortcode'));
     }
     
     function activate() {
@@ -27,7 +28,7 @@ class iHerbarium {
     
     public function ihb_shortcode()
     {
-        return $this->getListeObsHtml();
+        return $this->getListeObsHTML();
     }
     
     public function ihb_carte_shortcode($atts)
@@ -44,6 +45,23 @@ class iHerbarium {
            $content .= $this->getCarteHTML($longitude,$latitude,$radius);
         }
          
+        return $content;
+    }
+    
+    public function ihb_liste_shortcode($atts)
+    {
+        $content = "";
+        if (isset($atts['longitude']) && isset($atts['latitude']) )
+        {
+            $longitude = $atts['longitude'];
+            $latitude = $atts['latitude'];
+            if (isset($atts['radius']))
+                $radius = $atts['radius'];
+                else
+                    $radius = 0.04;
+                    $content .= $this->getListeObsByZoneHTML($longitude,$latitude,$radius);
+        }
+        
         return $content;
     }
     
@@ -233,7 +251,7 @@ class iHerbarium {
             //print_r($wp_query->query_vars);
             //print_r($_SERVER);
             include ('tpl/header.php');
-            echo $this->getListeObsHtml(10,(int)$wp_query->get('listeobs'));
+            echo $this->getListeObsHTML(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
             exit;
         }
@@ -243,7 +261,7 @@ class iHerbarium {
             $amyid = explode('-',$wp_query->get('idobs'));
             $idObs = (int)$amyid[sizeof($amyid)-1];
             
-            echo $this->getObsHtml($idObs);   
+            echo $this->getObsHTML($idObs);   
     
             exit;
         }
@@ -252,7 +270,7 @@ class iHerbarium {
         {
             $this->getIdsFromPhoto($idPhoto,$idObs);
             
-            echo $this->getPhotoHtml($idPhoto,$idObs);    
+            echo $this->getPhotoHTML($idPhoto,$idObs);    
             
             exit;
         }
@@ -280,7 +298,7 @@ class iHerbarium {
             //print_r($wp_query->query_vars);
             //print_r($_SERVER);
             include ('tpl/header.php');
-            echo $this->getListeObsHtml(10,(int)$wp_query->get('offset'),$wp_query->get('iduser'));
+            echo $this->getListeObsHTML(10,(int)$wp_query->get('offset'),$wp_query->get('iduser'));
             include ('tpl/footer.php');
             exit;
         }
@@ -325,7 +343,7 @@ class iHerbarium {
         
     }
     
-    function getHeaderHtml()
+    function getHeaderHTML()
     {
         ob_start(); 
         include ('tpl/header.php'); 
@@ -334,7 +352,7 @@ class iHerbarium {
         return $output; 
     }
     
-    function getFooterHtml()
+    function getFooterHTML()
     {
         ob_start();
         include ('tpl/footer.php');
@@ -352,7 +370,7 @@ class iHerbarium {
         return $results;
     }
     
-    function getObsHtml($idObs)
+    function getObsHTML($idObs)
     {
         global $wpdb;
            
@@ -364,7 +382,7 @@ class iHerbarium {
             die();
         }
 
-        $content = $this->getHeaderHtml();
+        $content = $this->getHeaderHTML();
         
         $content .= '<div class="fiche">';
         $content .= '<div class="header"><h1>Observation numéro : '.$idObs.'</h1></div>';
@@ -440,11 +458,11 @@ class iHerbarium {
 		$content .= '</div>';
 		$content .= '</div>';
 		
-		$content .= $this->getFooterHtml();
+		$content .= $this->getFooterHTML();
 		return $content;
     }
     
-    function getListeObsHtml($limit = 10, $offset = 0, $user = '')
+    function getListeObsHTML($limit = 10, $offset = 0, $user = '')
     {
         global $wpdb;
         global $wp;
@@ -512,7 +530,7 @@ class iHerbarium {
         return $content;
     }
     
-    function getPhotoHtml($idPhoto,$idObs)
+    function getPhotoHTML($idPhoto,$idObs)
     {
         global $wpdb;
         global $wp_query;
@@ -532,13 +550,13 @@ class iHerbarium {
         $texte_licence .= '';
         $texte_licence .= 'This picture is associated to <a href='.get_bloginfo('wpurl').'/observation/data/'.$results[0]['id_obs'].'> this observation</a><br>';
        
-        $content = $this->getHeaderHtml();
+        $content = $this->getHeaderHTML();
         $content .= $texte_licence.'
         <br>
         <a href="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" border=0>
         		<img src="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" >
         	</a>';
-        $content .= $this->getFooterHtml();
+        $content .= $this->getFooterHTML();
         return $content;
     }
     
@@ -838,39 +856,158 @@ class iHerbarium {
     
     function getPageCarteHTML($longitude,$latitude,$radius)
     {
-        $content = $this->getHeaderHtml();
+        $content = $this->getHeaderHTML();
         $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius."</h1>";
         $content .= $this->getCarteHTML($longitude,$latitude,$radius);
-        $content .= $this->getFooterHtml();
+        $content .= $this->getFooterHTML();
         return $content;
     }
     
-    function getCarteHTML($longitude,$latitude,$radius)
+    function getWhereZoneSQL($longitude,$latitude,$radius)
+    {
+        $p_sql = "iherba_observations.latitude >".((float)$latitude-(float)$radius). "
+                    AND iherba_observations.latitude < ".((float)$latitude+(float)$radius). "
+                    AND iherba_observations.longitude > ".((float)$longitude-(float)$radius). "
+                    AND iherba_observations.longitude < ".((float)$longitude+(float)$radius);
+        return $p_sql;
+    }
+    
+    function getFromInventorySQL()
+    {
+        $p_sql = "iherba_photos,iherba_observations ,iherba_determination ";
+        return $p_sql;
+    }
+    
+    function getWhereInventorySQL()
+    {
+        $p_sql = "iherba_observations.latitude !=0 
+                    AND iherba_observations.idobs=iherba_photos.id_obs
+                    AND iherba_observations.public='oui' 
+                    AND iherba_determination.`tropicosfamilyid` != '' 
+                    AND iherba_observations.idobs=iherba_determination.id_obs ";
+        return $p_sql;
+    }
+    
+    function getOrderInventorySQL()
+    {
+        $p_sql = "iherba_determination.famille,iherba_determination.genre";
+        return $p_sql;
+    }
+    
+    function getObsByZoneArray($longitude,$latitude,$radius)
     {
         global $wpdb;
-        $content = "";
-
+        $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
         $sql = "SELECT iherba_observations.idobs,
                     iherba_observations.longitude,
                     iherba_observations.latitude,
                     iherba_observations.commentaires,
                     iherba_photos.nom_photo_final,
-                    iherba_observations.deposit_timestamp, 
-                    iherba_observations.url_rewriting_fr, 
-                    iherba_observations.url_rewriting_en 
-                FROM iherba_photos,iherba_observations 
-                WHERE iherba_observations.latitude !=0 
-                    AND iherba_observations.idobs=iherba_photos.id_obs 
+                    iherba_observations.deposit_timestamp,
+                    iherba_observations.url_rewriting_fr,
+                    iherba_observations.url_rewriting_en
+                FROM iherba_photos,iherba_observations
+                WHERE iherba_observations.latitude !=0
+                    AND iherba_observations.idobs=iherba_photos.id_obs
                     AND iherba_observations.public='oui'
-                    AND iherba_observations.latitude >".((float)$latitude-(float)$radius). "
-                    AND iherba_observations.latitude < ".((float)$latitude+(float)$radius). "
-                    AND iherba_observations.longitude > ".((float)$longitude-(float)$radius). "
-                    AND iherba_observations.longitude < ".((float)$longitude+(float)$radius). "
-                GROUP BY iherba_observations.idobs 
-                ORDER BY iherba_observations.idobs DESC 
+                    AND ".$where_zone."
+                GROUP BY iherba_observations.idobs
+                ORDER BY iherba_observations.idobs DESC
                 LIMIT 0,250;";
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getObsInventoryByZoneArray($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+        
+        $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
+        $where_inventory = $this->getWhereInventorySQL();
+        
+        $sql = "SELECT distinct iherba_observations.idobs,
+                                            iherba_observations.longitude,
+                                            iherba_observations.latitude,
+                                            iherba_observations.commentaires,
+                                            iherba_photos.nom_photo_final,
+                                            iherba_observations.deposit_timestamp ,
+                                            iherba_determination.nom_commun,
+                                            iherba_determination.nom_scientifique,
+                                            iherba_determination.famille,
+                                            iherba_determination.genre
+                FROM ".$this->getFromInventorySQL()."
+                WHERE ".$this->getWhereInventorySQL()."
+                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)." 
+                GROUP BY iherba_determination.tropicosid
+                ORDER BY ".$this->getOrderInventorySQL();
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getObsFamilyInventoryByZoneArray($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+
+        $sql = "SELECT distinct iherba_determination.famille, 
+                        count(iherba_observations.idobs)
+                FROM ".$this->getFromInventorySQL()."
+                WHERE ".$this->getWhereInventorySQL()."
+                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)." 
+                GROUP BY iherba_determination.tropicosid
+                ORDER BY ".$this->getOrderInventorySQL();
         
         $results = $wpdb->get_results( $sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getObsGenreInventoryByZoneArray($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+        
+        $sql = "SELECT distinct iherba_determination.genre
+                FROM ".$this->getFromInventorySQL()."
+                WHERE ".$this->getWhereInventorySQL()."
+                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)."
+                GROUP BY iherba_determination.genre
+                ORDER BY ".$this->getOrderInventorySQL();
+        
+        $results = $wpdb->get_results($sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getObsSpeciesInventoryByZoneArray($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+        
+        $sql = "SELECT distinct iherba_determination.tropicosid, 
+                        count(iherba_observations.idobs)
+                FROM ".$this->getFromInventorySQL()."
+                WHERE ".$this->getWhereInventorySQL()."
+                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)."
+                GROUP BY iherba_determination.tropicosid
+                ORDER BY ".$this->getOrderInventorySQL();
+        
+        $results = $wpdb->get_results($sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getNbObsInventoryByZoneArray($longitude,$latitude,$radius)
+    {
+        global $wpdb;
+        
+        $sql = "SELECT distinct iherba_observations.idobs
+                        FROM iherba_observations
+                        WHERE ".$this->getWhereZoneSQL($longitude, $latitude, $radius);
+        
+        $results = $wpdb->get_results($sql, ARRAY_A );
+        return $results;
+    }
+    
+    function getCarteHTML($longitude,$latitude,$radius)
+    {
+        $content = "";
+
+        $results = $this->getObsByZoneArray($longitude, $latitude, $radius);
         if(sizeof($results)>0)
         {
             $content .= '
@@ -892,13 +1029,11 @@ class iHerbarium {
                 // add markers to the map';
             $arrayMarker ="";
             foreach ($results as $donnees)
-            {
-                
+            {     
                 $nc = '';
                 $ns = '';
                 
-                $sql = "SELECT nom_commun,nom_scientifique FROM iherba_determination WHERE id_obs = ".$donnees['idobs']." ORDER BY date ASC";
-                $results_nom=$wpdb->get_results( $sql, ARRAY_A );
+                $results_nom = $this->getDeterminationArray($donnees['idobs']);
                 if(sizeof($results_nom)>0)
                 {
                     foreach ($results_nom as $donnees_nom)
@@ -918,9 +1053,7 @@ class iHerbarium {
                 }
                 $description .= 'Transmise le : '.$donnees['deposit_timestamp'] .'<br />';
                 $description .= 'Note : '.str_replace("\n"," ",str_replace('"'," ",str_replace("\r"," ",str_replace("'"," ",utf8_decode($donnees['commentaires']))))).'</p>';
-                
-                
-                
+
                 $content .= '
                     marker = L.marker(['.$donnees['latitude'].','.$donnees['longitude'].']).addTo(map).bindPopup("'.$description.'");';
                 $arrayMarker .='['.$donnees['latitude'].','.$donnees['longitude'].'],';
@@ -937,6 +1070,17 @@ class iHerbarium {
         return $content;
     }
     
+    function getListeObsByZoneHTML($longitude,$latitude,$radius)
+    {
+        $content = "";
+        
+        $results = $this->getObsByZoneArray($longitude, $latitude, $radius);
+        if(sizeof($results)>0)
+        {
+            
+        }
+    }
+    
 }
 
 $iHerbarium = new iHerbarium();
@@ -951,7 +1095,6 @@ add_filter('query_vars',array($iHerbarium, 'add_query_vars'));
 // Could probably run it once as long as it isn't going to change or check the
 // $wp_rewrite rules to see if it's active.
 add_filter('admin_init', array($iHerbarium, 'flush_rewrite_rules'));
-//add_filter('wp_title', array($iHerbarium, 'getTitleiHerbarium'));
 add_filter('wpseo_title', array($iHerbarium, 'getTitleiHerbarium'));
 add_filter( 'wpseo_metadesc', array($iHerbarium, 'getDesciHerbarium'));
 add_action( 'template_redirect', array($iHerbarium, 'template_redirect_intercept') );
