@@ -899,10 +899,12 @@ h2,
   font-size: 1.75em;
   line-height: 1.4em;
   margin-bottom: 0.375em;
+  font-weight: 700;
 }
 h3,
 .h3 {
-  font-size: 1.125em;
+  font-size: 1.3em;
+  font-weight: 700;
 }
 h4,
 .h4 {
@@ -1320,6 +1322,8 @@ and more scalable.
 14. IHERBARIUM
 *********************/
 
+
+
 /*scroll to top*/
 .scrollToTop{
 	width: 0; 
@@ -1524,6 +1528,11 @@ header.site-header {background-color:#013b1b;z-index: 500;
 .fiche .contenu{padding:10px;background:#ecfaf1;border-radius:5px;}
 .fiche .contenu .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
 	margin: 5px 5px 5px 0;border-radius:5px;}
+	
+.inventory .h3{padding-top:10px;}
+.inventory .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
+	margin: 5px 5px 5px 0;border-radius:5px;vertical-align: middle;}
+	
 
 
 /** ETIQUETTE **/

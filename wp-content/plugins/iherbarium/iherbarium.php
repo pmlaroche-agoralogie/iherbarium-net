@@ -894,7 +894,7 @@ class iHerbarium {
         return $p_sql;
     }
     
-    function getObsByZoneArray($longitude,$latitude,$radius)
+    function getObsByZoneArray($longitude,$latitude,$radius,$limit=1)
     {
         global $wpdb;
         $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
@@ -912,8 +912,9 @@ class iHerbarium {
                     AND iherba_observations.public='oui'
                     AND ".$where_zone."
                 GROUP BY iherba_observations.idobs
-                ORDER BY iherba_observations.idobs DESC
-                LIMIT 0,250;";
+                ORDER BY iherba_observations.idobs DESC";
+        if ($limit)
+            $sql .= " LIMIT 0,250;";
         $results = $wpdb->get_results( $sql, ARRAY_A );
         return $results;
     }
@@ -943,65 +944,7 @@ class iHerbarium {
         $results = $wpdb->get_results( $sql, ARRAY_A );
         return $results;
     }
-    
-    function getObsFamilyInventoryByZoneArray($longitude,$latitude,$radius)
-    {
-        global $wpdb;
 
-        $sql = "SELECT distinct iherba_determination.famille, 
-                        count(iherba_observations.idobs)
-                FROM ".$this->getFromInventorySQL()."
-                WHERE ".$this->getWhereInventorySQL()."
-                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)." 
-                GROUP BY iherba_determination.tropicosid
-                ORDER BY ".$this->getOrderInventorySQL();
-        
-        $results = $wpdb->get_results( $sql, ARRAY_A );
-        return $results;
-    }
-    
-    function getObsGenreInventoryByZoneArray($longitude,$latitude,$radius)
-    {
-        global $wpdb;
-        
-        $sql = "SELECT distinct iherba_determination.genre
-                FROM ".$this->getFromInventorySQL()."
-                WHERE ".$this->getWhereInventorySQL()."
-                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)."
-                GROUP BY iherba_determination.genre
-                ORDER BY ".$this->getOrderInventorySQL();
-        
-        $results = $wpdb->get_results($sql, ARRAY_A );
-        return $results;
-    }
-    
-    function getObsSpeciesInventoryByZoneArray($longitude,$latitude,$radius)
-    {
-        global $wpdb;
-        
-        $sql = "SELECT distinct iherba_determination.tropicosid, 
-                        count(iherba_observations.idobs)
-                FROM ".$this->getFromInventorySQL()."
-                WHERE ".$this->getWhereInventorySQL()."
-                    AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)."
-                GROUP BY iherba_determination.tropicosid
-                ORDER BY ".$this->getOrderInventorySQL();
-        
-        $results = $wpdb->get_results($sql, ARRAY_A );
-        return $results;
-    }
-    
-    function getNbObsInventoryByZoneArray($longitude,$latitude,$radius)
-    {
-        global $wpdb;
-        
-        $sql = "SELECT distinct iherba_observations.idobs
-                        FROM iherba_observations
-                        WHERE ".$this->getWhereZoneSQL($longitude, $latitude, $radius);
-        
-        $results = $wpdb->get_results($sql, ARRAY_A );
-        return $results;
-    }
     
     function getCarteHTML($longitude,$latitude,$radius)
     {
@@ -1074,11 +1017,50 @@ class iHerbarium {
     {
         $content = "";
         
-        $results = $this->getObsByZoneArray($longitude, $latitude, $radius);
+        $results = $this->getObsInventoryByZoneArray($longitude, $latitude, $radius);
         if(sizeof($results)>0)
         {
             
+            $nbFamily = 0;
+            $nbGenre = 0;
+            $nbSpecies = 0;
+            $current = array();
+            foreach ($results as $donnees)
+            {   
+                $image=$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'];
+                if($donnees['famille']!=$current['famille'])
+                {
+                    $content .= '<div class="h3">Famille : '.$donnees['famille'].'</div>';
+                    $nbFamily++;
+                }
+                if($donnees['genre']!=$current['genre'])
+                {
+                    $content .= '<div class="h4">Genre : '.$donnees['genre'].'</div>';
+                    $nbGenre++;
+                }
+                
+                    $content.='<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'"
+                    style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'].'\')">
+                        </a>';
+                $content.='
+                            <a href="'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'">'.
+                            ' '.$donnees['nom_commun']."/".$donnees['nom_scientifique']."</a>";
+                        
+                $current['famille'] = $donnees['famille'];
+                $current['genre'] = $donnees['genre'];
+                $content.= "<br>";
+                $nbSpecies++;
+            }
+            
+            $content = '<div class="inventory"><div class="h2">Inventaires des especes déterminées</div>   
+                        <br/>Nombre d\'observations dans cette zone : '.sizeof($this->getObsByZoneArray($longitude, $latitude, $radius,0)).'
+                        <br/>Nombre de famille différentes dans cette zone : '.$nbFamily.'
+                        <br/>Nombre de genres différents dans cette zone : '.$nbGenre.'
+                        <br/>Nombre d\'espèces différentes dans cette zone : '.$nbSpecies.$content;
+            $content .="</div>";
+
         }
+        return $content;
     }
     
 }
