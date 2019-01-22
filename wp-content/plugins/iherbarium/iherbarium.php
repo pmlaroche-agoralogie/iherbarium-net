@@ -82,6 +82,7 @@ class iHerbarium {
             'carte/longitude/(.+)/latitude/(.+)/radius/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3),
             'utilisateur/(.+)/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1).'&offset='.$wp_rewrite->preg_index(2),
             'utilisateur/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1),
+            'observation/new/' => 'index.php?ihaction=newobs',
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -134,6 +135,11 @@ class iHerbarium {
         if ($wp_query->get('iduser'))
         {
             $title = 'iHerbarium - Observations de l\'utilisateur '.$wp_query->get('iduser');
+        }
+        
+        if ($wp_query->get('ihaction') == "newobs")
+        {
+            
         }
         
         if ($title == ''){
@@ -200,6 +206,11 @@ class iHerbarium {
         if ($wp_query->get('iduser'))
         {
             $desc = 'iHerbarium - Observations de l\'utilisateur '.$wp_query->get('iduser');
+        }
+        
+        if ($wp_query->get('ihaction') == "newobs")
+        {
+            
         }
         
         /*if ($desc == ''){
@@ -299,6 +310,17 @@ class iHerbarium {
             //print_r($_SERVER);
             include ('tpl/header.php');
             echo $this->getListeObsHTML(10,(int)$wp_query->get('offset'),$wp_query->get('iduser'));
+            include ('tpl/footer.php');
+            exit;
+        }
+        
+        if ($wp_query->get('ihaction') == "newobs")
+        {
+            include ('tpl/header.php');
+            echo 'new';
+            echo '<form>';
+            echo '<input type="file" name="myFile" multiple/>';
+            echo '</form>';
             include ('tpl/footer.php');
             exit;
         }
