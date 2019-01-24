@@ -26,6 +26,17 @@ class iHerbarium {
         $this->flush_rewrite_rules();
     }
     
+    public function init_scripts_fileupload(){
+        wp_enqueue_script('jquery-ui-widget');
+        wp_register_script('jquery-iframe-tansport', plugin_dir_url( __FILE__ ) . 'js/jquery.iframe-transport.js',array(),false,true);
+        wp_register_script('jquery-fileupload', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload.js',array(),false,true);
+        wp_register_script('js-iherbarium', plugin_dir_url( __FILE__ ) . 'js/iherbarium.js',array(),false,true);
+        wp_enqueue_script( 'jquery-iframe-tansport' );
+        wp_enqueue_script( 'jquery-fileupload' );
+        wp_enqueue_script( 'js-iherbarium' );
+        
+    }
+    
     public function ihb_shortcode()
     {
         return $this->getListeObsHTML();
@@ -316,11 +327,9 @@ class iHerbarium {
         
         if ($wp_query->get('ihaction') == "newobs")
         {
+            add_action('wp_enqueue_scripts',array($this, 'init_scripts_fileupload'));
             include ('tpl/header.php');
-            echo 'new';
-            echo '<form>';
-            echo '<input type="file" name="myFile" multiple/>';
-            echo '</form>';
+            include ('tpl/submit-obs-form.php');
             include ('tpl/footer.php');
             exit;
         }
