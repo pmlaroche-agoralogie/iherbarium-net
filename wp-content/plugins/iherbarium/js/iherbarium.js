@@ -28,40 +28,30 @@ jQuery(function ($) {
     .append($('<span/>').text('Processing...'))
     .on('click', function (e) {
     		e.preventDefault();
-        var $this = $(this),
+    		var template = $(e.currentTarget)
+            .closest('.file');
+            
+       var $this = $(this),
             data = $this.data();
+
+        console.log(data);
+
         if (data.abort) {
-            data.abort();console.log('t5t');
+            data.abort();
+            console.log('abort1');
+            template.remove();
         } else {
-            data.errorThrown = 'abort';
-           $('#fileupload').trigger('fail', e, data);console.log('t6t');
+            data.errorThrown = 'abort';console.log('abort2');
+           $('#fileupload').trigger('fail', e, data);
         }}
         );
-	
-/*	var fileUploadButtonBar = this.element.find('.fileupload-buttonbar'),
-    filesList = this.options.filesContainer;
-this._on(fileUploadButtonBar.find('.start'), {
-    click: function (e) {
-        e.preventDefault();
-        filesList.find('.start').click();
-    }
-});
-this._on(fileUploadButtonBar.find('.cancel'), {
-    click: function (e) {
-        e.preventDefault();
-        filesList.find('.cancel').click();
-    }
-});*/
-        
-       
-	
         
   var myFileUpload =  $('#fileupload').fileupload({
         //url: url,
         dataType: 'json',
         autoUpload: false,
         acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-        maxFileSize: 999000,
+        //maxFileSize: 999000,
         // Enable image resizing, except for Android and Opera,
         // which actually support image resizing, but fail to
         // send Blob objects via XHR requests:
@@ -71,7 +61,7 @@ this._on(fileUploadButtonBar.find('.cancel'), {
         previewMaxHeight: 100,
         previewCrop: true
     }).on('fileuploadadd', function (e, data) {
-        data.context = $('<div/>').appendTo('#files');
+        data.context = $('<div/>').addClass('file').appendTo('#files');
         
         $.each(data.files, function (index, file) {
             var node = $('<p/>')
@@ -92,7 +82,12 @@ this._on(fileUploadButtonBar.find('.cancel'), {
                 e.preventDefault();
                // filesList.find('.start').click();
                 console.log('submit');
-                data.submit();
+                console.log(data);
+               
+                if (data.files.length)
+                	{
+                		data.submit();
+                	}
                 /* TODO: submit each files via ajax then submit form if ok and change page, verify form before submit*/
             });
 
@@ -140,6 +135,8 @@ this._on(fileUploadButtonBar.find('.cancel'), {
         });
     }).on('fileuploadfail', function (e, data) {
         $.each(data.files, function (index) {
+   /* 	if (data.context) {
+            data.context.each(function (index) {*/
         	
         	if (data.errorThrown !== 'abort')
         	{
@@ -147,17 +144,22 @@ this._on(fileUploadButtonBar.find('.cancel'), {
             $(data.context.children()[index])
                 .append('<br>')
                 .append(error);
+            console.log('toto');
         	}
         	else
         	{
         		console.log('abort');
         		$(this).remove();
+        		
+        		data.files.splice(index,1);
         	}
             
         });
+   // 	}
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 	
 
 
 });
+

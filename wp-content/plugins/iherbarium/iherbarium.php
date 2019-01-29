@@ -39,8 +39,9 @@ class iHerbarium {
         wp_register_script('jquery-fileupload', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload.js',array(),false,true);
         wp_register_script('jquery-fileupload-process', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-process.js',array(),false,true);
         wp_register_script('jquery-fileupload-image', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-image.js',array(),false,true);
+        wp_register_script('jquery-fileupload-validate', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-validate.js',array(),false,true);
         
-        wp_register_script('jquery-fileupload-ui', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-ui.js',array(),false,true);
+       // wp_register_script('jquery-fileupload-ui', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-ui.js',array(),false,true);
        // wp_register_script('jquery-fileupload-jquery-ui', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-jquery-ui.js',array(),false,true);
         wp_register_script('js-iherbarium', plugin_dir_url( __FILE__ ) . 'js/iherbarium.js',array(),false,true);
        
@@ -54,6 +55,7 @@ class iHerbarium {
         wp_enqueue_script('jquery-fileupload' );
         wp_enqueue_script('jquery-fileupload-process');
         wp_enqueue_script('jquery-fileupload-image');
+        wp_enqueue_script('jquery-fileupload-validate');
        // wp_enqueue_script( 'jquery-fileupload-ui' );
     //    wp_enqueue_script( 'jquery-fileupload-jquery-ui' );
         
