@@ -28,10 +28,15 @@ class iHerbarium {
     
     public function init_scripts_fileupload(){
         
+        wp_register_style( 'bootstrap-css', 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css');
         wp_register_style( 'jquery-fileupload-css', plugin_dir_url( __FILE__). 'css/jquery.fileupload.css');
+        wp_register_style( 'iherbarium-css', plugin_dir_url( __FILE__). 'css/iherbarium.css');
+        wp_enqueue_style( 'bootstrap-css' );
         wp_enqueue_style( 'jquery-fileupload-css' );
+        wp_enqueue_style( 'iherbarium-css' );
         
         
+        //wp_register_script( 'bootstrap-js', 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js', array('jquery'), '3.3.4', true );
         wp_register_script('jquery-iframe-tansport', plugin_dir_url( __FILE__ ) . 'js/jquery.iframe-transport.js',array(),false,true);
        
         wp_register_script('load-image-all', plugin_dir_url( __FILE__ ) . 'js/load-image.all.min.js',array(),false,true);
@@ -48,7 +53,7 @@ class iHerbarium {
        
         wp_enqueue_script('jquery-ui-widget');
         
-        
+        //wp_enqueue_script( 'bootstrap-js');
        // wp_enqueue_script( 'jquery-iframe-tansport' );
         wp_enqueue_script('load-image-all');
         

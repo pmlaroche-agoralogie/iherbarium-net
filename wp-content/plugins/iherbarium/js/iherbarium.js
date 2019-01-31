@@ -23,8 +23,8 @@ jQuery(function ($) {
                 });
             });*/
 	var cancelButton = $('<button/>')
-    .addClass('btn btn-primary cancel')
-    .prepend('<i class="glyphicon glyphicon-ban-circle"/>')
+    .addClass('btn btn-danger cancel')
+    .prepend('<i class="glyphicon glyphicon-ban-circle"/>').append(' ')
     .append($('<span/>').text('Processing...'))
     .on('click', function (e) {
     		e.preventDefault();
@@ -64,11 +64,12 @@ jQuery(function ($) {
         data.context = $('<div/>').addClass('file').appendTo('#files');
         
         $.each(data.files, function (index, file) {
-            var node = $('<p/>')
-                    .append($('<span/>').text(file.name));
+            /*var node = $('<p/>')
+                    .append($('<span/>').text(file.name));*/
+        		var node = $('<span/>').text(file.name);
             if (!index) {
                 node
-                    .append('<br>')
+                    //.append('<br>')
                     //.append(uploadButton.clone(true).data(data));
                     .append(cancelButton.clone(true).data(data));
             }
@@ -99,13 +100,13 @@ jQuery(function ($) {
             node = $(data.context.children()[index]);
         if (file.preview) {
             node
-                .prepend('<br>')
+                //.prepend('<br>')
                 .prepend(file.preview);
         }
         if (file.error) {
             node
                 .append('<br>')
-                .append($('<span class="text-danger"/>').text(file.error));
+                .append($('<span class="label label-danger"/>').text('Erreur')).text(file.error);
         }
         if (index + 1 === data.files.length) {
             data.context.find('button.cancel span')
@@ -127,7 +128,7 @@ jQuery(function ($) {
                 $(data.context.children()[index])
                     .wrap(link);
             } else if (file.error) {
-                var error = $('<span class="text-danger"/>').text(file.error);
+                var error = ($('<span class="label label-danger"/>').text('Erreur')).text(file.error);
                 $(data.context.children()[index])
                     .append('<br>')
                     .append(error);
@@ -140,7 +141,7 @@ jQuery(function ($) {
         	
         	if (data.errorThrown !== 'abort')
         	{
-        		var error = $('<span class="text-danger"/>').text('File upload failed.');
+        		var error = ($('<span class="label label-danger"/>').text('Erreur')).append('File upload failed.');
             $(data.context.children()[index])
                 .append('<br>')
                 .append(error);
