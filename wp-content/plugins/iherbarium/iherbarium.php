@@ -356,16 +356,77 @@ class iHerbarium {
             exit;
         }
         
+        //Submit newobs
         if ($wp_query->get('ihaction') == "newobs")
         {
+            $uuid_obs = $this->getUUID();
+            if (is_user_logged_in())
+            {
+            $user=wp_get_current_user();
+            $user_id = $user->ID;
+            //print_r($user);
             add_action('wp_enqueue_scripts',array($this, 'init_scripts_fileupload'));
-            echo '<pre>';
+          /*  echo '<pre>';
             print_r($_REQUEST);
             print_r($_FILES);
-            echo '</pre>';
+            echo '</pre>';*/
             include ('tpl/header.php');
             include ('tpl/submit-obs-form.php');
             include ('tpl/footer.php');
+            }
+            else 
+            {
+                include ('tpl/header.php');
+                echo 'Vous devez être connecté pour soummetre une observation.';
+                include ('tpl/footer.php');
+            }
+                
+            exit;
+        }
+        
+        //Get file newobs
+        if ($wp_query->get('ihaction') == "submitobs")
+        {
+            $phpFileUploadErrors = array(
+                0 => 'There is no error, the file uploaded with success',
+                1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+                2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+                3 => 'The uploaded file was only partially uploaded',
+                4 => 'No file was uploaded',
+                6 => 'Missing a temporary folder',
+                7 => 'Failed to write file to disk.',
+                8 => 'A PHP extension stopped the file upload.',
+            );
+            $aStatus = array('status' => 'success');
+
+            foreach ($_FILES as $file)
+            {
+                
+            
+            if ($file['error'][0])
+                {
+                    $aStatus['status'] = 'error';
+                    $aStatus['file'] = array('error' => $phpFileUploadErrors[$file['error'][0]]);
+                    //$aStatus['file'] = array('error' => $phpFileUploadErrors['4']);
+                }
+                else 
+                {
+                    //enregister
+                    if ($_REQUEST['uuid_obs'])
+                    {
+                        $user = get_user_by('id', $_REQUEST['id_user']);
+                        //todo serach or create typo3 user
+                        
+                    }
+                    else 
+                    {
+                        $aStatus['status'] = 'error';
+                        $aStatus['file'] = array('error' => 'no uuid');
+                    }
+                }
+            }
+            
+            echo json_encode($aStatus);
             exit;
         }
     }
@@ -425,6 +486,14 @@ class iHerbarium {
         $output = ob_get_contents();
         ob_end_clean();
         return $output; 
+    }
+    
+    function getUUID()
+    {
+        global $wpdb;
+        $sql = "SELECT UUID() AS uuid" ;
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        return $results[0]['uuid'];
     }
     
     function getObsArray($idObs)

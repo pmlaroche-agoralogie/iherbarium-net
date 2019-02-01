@@ -1,8 +1,8 @@
 <form id="fileupload" action="?ihaction=newobs" method="POST" enctype="multipart/form-data"> 
 	<noscript>Nécessite l'exécution de scripts</noscript>
 	
-	
-	
+	<input type="hidden" name="id_user" value="<?php echo $user_id?>"/>
+	<input type="hidden" name="uuid_obs" value="<?php echo $uuid_obs?>"/>
 	
 	<span class="btn btn-success fileinput-button">
         <i class="glyphicon glyphicon-plus"></i>
