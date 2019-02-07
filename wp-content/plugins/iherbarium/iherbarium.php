@@ -221,6 +221,19 @@ class iHerbarium {
         return $results[0]['id_typo'];
     }
     
+    function setIDbyUUID($uuid){
+        global $wpdb;
+        $user = get_user_by('login',$uuid);
+        $sql = "SELECT MAX(id_typo) AS 'max_id_typo' FROM iherba__users_typo_wp";
+        $results = $wpdb->get_results( $sql , ARRAY_A );
+        $sql = "INSERT INTO iherba__users_typo_wp (id_typo,id_wp) VALUES (".($results[0]['max_id_typo']+1).",".$user->ID.")";
+        $results = $wpdb->query( $sql);
+        if ($results)
+            return ($results[0]['max_id_typo']+1);
+        else 
+            return false;
+    }
+    
     function getDesciHerbarium() {
         global $wp_query;
         $desc = '';
@@ -415,7 +428,38 @@ class iHerbarium {
                     if ($_REQUEST['uuid_obs'])
                     {
                         $user = get_user_by('id', $_REQUEST['id_user']);
-                        //todo serach or create typo3 user
+                        $typo_id = $this->getIDbyUUID($user->data->user_login);
+                        if (!$typo_id)
+                        {
+                            echo 'create';
+                            $typo_id = $this->setIDbyUUID($user->data->user_login);
+                            
+                        }
+                        
+                        if (!$typo_id)
+                        {
+                            $aStatus['status'] = 'error';
+                            $aStatus['file'] = array('error' => 'no typo_id');
+                        }
+                        else 
+                        {
+                            //save info
+                            global $wpdb;
+                            $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
+                            $results = $wpdb->get_results( $sql , ARRAY_A );
+                            if (!$results)
+                            {
+
+                                $sql = $wpdb->prepare("INSERT INTO iherba_observations (uuid_observation,commentaires) VALUES (%s,%s)",$_REQUEST['uuid_obs'],$_REQUEST['commentaires']);
+                                $wpdb->query($sql);
+                                echo 'create';
+                                $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
+                                $results = $wpdb->get_results( $sql , ARRAY_A );
+                            }
+                            print_r($results);
+                            
+                        }
+                       
                         
                     }
                     else 

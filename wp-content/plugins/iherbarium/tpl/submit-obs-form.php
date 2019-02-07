@@ -21,7 +21,8 @@
    
     <!-- The container for the uploaded files -->
     <div id="files" class="files"></div>
-    <input type="text" name="montest" value="truc">
+    Commentaires:
+    <input type="text" name="commentaires" value="">
     <div class="fileupload-buttonbar">
 		<div class="fileupload-buttons">
 			<button type="submit" class="btn btn-primary start">
