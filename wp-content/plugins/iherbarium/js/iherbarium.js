@@ -1,9 +1,5 @@
 jQuery(function ($) {
 	
-	function sleep(ms) {
-		  return new Promise(resolve => setTimeout(resolve, ms));
-		}
-	
 	'use strict';
 	var url = '?ihaction=submitobs' ;
 	var cancelButton = $('<button/>')
@@ -18,14 +14,11 @@ jQuery(function ($) {
        var $this = $(this),
             data = $this.data();
 
-        console.log(data);
-
         if (data.abort) {
             data.abort();
-            console.log('abort1');
             template.remove();
         } else {
-            data.errorThrown = 'abort';console.log('abort2');
+            data.errorThrown = 'abort';
            $('#fileupload').trigger('fail', e, data);
         }}
         );
@@ -45,17 +38,14 @@ jQuery(function ($) {
         previewMaxHeight: 100,
         previewCrop: true,
         sequentialUploads: true,
+        dropZone: $('#dropzone'),
     }).on('fileuploadadd', function (e, data) {
         data.context = $('<div/>').addClass('file').appendTo('#files');
         
         $.each(data.files, function (index, file) {
-            /*var node = $('<p/>')
-                    .append($('<span/>').text(file.name));*/
         		var node = $('<span/>').text(file.name);
             if (!index) {
                 node
-                    //.append('<br>')
-                    //.append(uploadButton.clone(true).data(data));
                     .append(cancelButton.clone(true).data(data));
             }
             node.appendTo(data.context);
@@ -66,19 +56,17 @@ jQuery(function ($) {
         var fileUploadButtonBar = $('body').find('.fileupload-buttonbar');
         fileUploadButtonBar.find('.start').on('click',function (e) {
                 e.preventDefault();
-               // filesList.find('.start').click();
-                console.log('submit');
-                console.log(data);
-                //if (data.result.length)
-                	if (typeof data.result !== 'undefined') 
+                if (typeof data.result !== 'undefined') 
                 if (data.result.id_obs)
     				{
     				
     					$("input[name=id_obs]").val(data.result.id_obs);
     				}
-                	 sleep(10000);
+
                 if (data.files.length)
                 	{
+                		$('.drophere').hide();
+                		$('.progress').show();
                 		data.submit();
                 	}
                 /* TODO: submit each files via ajax then submit form if ok and change page, verify form before submit*/
@@ -92,7 +80,6 @@ jQuery(function ($) {
             node = $(data.context.children()[index]);
         if (file.preview) {
             node
-                //.prepend('<br>')
                 .prepend(file.preview);
         }
         if (file.error) {
@@ -112,33 +99,17 @@ jQuery(function ($) {
             'width',
             progress + '%'
         );
-    }).on('fileuploaddone', function (e, data) {	console.log('la');
-
-       /* $.each(data.result.files, function (index, file) {
-            if (file.url) {
-                var link = $('<a>')
-                    .attr('target', '_blank')
-                    .prop('href', file.url);
-                $(data.context.children()[index])
-                    .wrap(link);
-            } else if (file.error) {
-                var error = ($('<span class="label label-danger"/>').text('Erreur'));
-                $(data.context.children()[index])
-                    .append('<br>')
-                    .append(error)
-                    .append(file.error);
-            }
-        });*/
-    //$.each(data.result, function (index, myresult) {
-    //	console.log(myresult);
+    }).on('fileuploaddone', function (e, data) {	
 
     		if (data.result.status!='error') {
-    			console.log('ok');
-    			if (data.result.id_obs)
-    			{
-    				
-    				$("input[name=id_obs]").val(data.result.id_obs);
-    			}
+    			$.each(data.files, function (index) {
+    				$(data.context).remove();
+    				data.files.splice(index,1);
+    				if ($('#files > *').length == 0)
+    				{
+    					$('#fileupload').submit();
+    				}
+    			});
     		}
     		else
     		{
@@ -153,34 +124,48 @@ jQuery(function ($) {
     		}
    // });
     }).on('fileuploadfail', function (e, data) {
-        $.each(data.files, function (index) {
-   /* 	if (data.context) {
-            data.context.each(function (index) {*/
-        	console.log('ici');
-        	
-        	if (data.errorThrown !== 'abort')
-        	{
-        		var error = ($('<span class="label label-danger"/>').text('Erreur'));
-            $(data.context.children()[index])
-                .append('<br>')
-                .append(error)
-                .append('File upload failed.');
-            console.log('toto');
-        	}
-        	else
-        	{
-        		console.log('abort');
-        		$(this).remove();
-        		
-        		data.files.splice(index,1);
-        	}
+        $.each(data.files, function (index) {       	
+	        	if (data.errorThrown !== 'abort')
+	        	{
+	        		var error = ($('<span class="label label-danger"/>').text('Erreur'));
+	            $(data.context.children()[index])
+	                .append('<br>')
+	                .append(error)
+	                .append('File upload failed.');
+	        	}
+	        	else
+	        	{
+	        		//console.log('abort');
+	        		$(this).remove();
+	        		
+	        		data.files.splice(index,1);
+	        	}
             
         });
-   // 	}
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 	
 
+  $(document).bind('dragover', function (e) {
+	    var dropZone = $('#dropzone'),
+	        timeout = window.dropZoneTimeout;
+	    if (timeout) {
+	        clearTimeout(timeout);
+	    } else {
+	        dropZone.addClass('in');
+	    }
+	    var hoveredDropZone = $(e.target).closest(dropZone);
+	    dropZone.toggleClass('hover', hoveredDropZone.length);
+	    window.dropZoneTimeout = setTimeout(function () {
+	        window.dropZoneTimeout = null;
+	        dropZone.removeClass('in hover');
+	    }, 100);
+	});
 
+	$(document).bind('drop dragover', function (e) {
+	    e.preventDefault();
+	});
 });
+
+
 

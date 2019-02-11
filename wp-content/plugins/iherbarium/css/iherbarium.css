@@ -1,3 +1,34 @@
 @charset "UTF-8";
 
 #fileupload canvas{display:inline-block;margin-right:20px;    vertical-align: text-top;}
+
+#dropzone {
+    /*background: palegreen;*/
+   /* width: 150px;
+    height: 50px;*/
+    line-height: 50px;
+    text-align: center;
+    font-weight: bold;
+    border: dashed 5px #013b1b;
+}
+#dropzone.in {
+    /*width: 600px;
+    height: 200px;*/
+    line-height: 70px;
+    font-size: larger;
+}
+#dropzone.hover {
+    /*background: lawngreen;*/
+}
+#dropzone.fade {
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+
+.commentaires {width:100%;margin-bottom:20px;}
+
+.progress{display:none;}

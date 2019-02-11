@@ -13,6 +13,7 @@ include_once(plugin_dir_path( __FILE__ ).'utils.php');
 
 class iHerbarium {
     public $domaine_photo = "http://medias.iherbarium.fr";
+    public $photo_dir = "medias/sources/";
     
     public function __construct()
     {
@@ -397,7 +398,28 @@ class iHerbarium {
             exit;
         }
         
-        //Get file newobs
+        //Submit newobs
+        if ($wp_query->get('ihaction') == "thankyouobs")
+        {
+
+            //print_r($_REQUEST);
+            
+            global $wpdb;
+            $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
+            $results = $wpdb->get_results( $sql , ARRAY_A );
+            
+
+            $url = $results[0][idobs];
+            
+           include ('tpl/header.php');
+           echo 'Merci pour votre soumission.<br> Vous pouvez la consulter  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" ">ici</a>';
+           include ('tpl/footer.php');
+
+            
+            exit;
+        }
+        
+        //submit file newobs
         if ($wp_query->get('ihaction') == "submitobs")
         {
             $phpFileUploadErrors = array(
@@ -412,15 +434,12 @@ class iHerbarium {
             );
             $aStatus = array('status' => 'success');
 
-            foreach ($_FILES as $file)
+            foreach ($_FILES["files"]["error"] as $key => $error) 
             {
-                
-            
-            if ($file['error'][0])
+                if ($_FILES['error'][$key])
                 {
                     $aStatus['status'] = 'error';
                     $aStatus['file'] = array('error' => $phpFileUploadErrors[$file['error'][0]]);
-                    //$aStatus['file'] = array('error' => $phpFileUploadErrors['4']);
                 }
                 else 
                 {
@@ -449,15 +468,44 @@ class iHerbarium {
                             $results = $wpdb->get_results( $sql , ARRAY_A );
                             if (!$results)
                             {
+                                $longitude = 0;
+                                $latitude = 0;
+                                if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
+                                { 
+                                    $longitude = calcul_longitude_exif($exif);
+                                    $latitude = calcul_latitude_exif($exif);
+                                }
 
-                                $sql = $wpdb->prepare("INSERT INTO iherba_observations (uuid_observation,commentaires) VALUES (%s,%s)",$_REQUEST['uuid_obs'],$_REQUEST['commentaires']);
+                                $sql = $wpdb->prepare("INSERT INTO iherba_observations (id_user,uuid_observation,commentaires,latitude,longitude,date_depot) 
+                                                    VALUES (%d,%s,%s,%f,%f,%s)",$typo_id,$_REQUEST['uuid_obs'],$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'));
                                 $wpdb->query($sql);
-                                echo 'create';
                                 $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
                                 $results = $wpdb->get_results( $sql , ARRAY_A );
                             }
-                            print_r($results);
                             
+                            //save info photo
+                            $longitude = 0;
+                            $latitude = 0;
+                            if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
+                            {
+                                $longitude = calcul_longitude_exif($exif);
+                                $latitude = calcul_latitude_exif($exif);
+                            }
+                            $sql=$wpdb->prepare("INSERT INTO iherba_photos (id_obs,latitude_exif,longitude_exif,nom_photo_initial,all_exif_fields,date_depot)
+                                        VALUES (%d,%f,%f,%s,%s,%s)",$results[0][idobs],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'));
+                            $wpdb->query($sql);
+                            $lastid = $wpdb->insert_id;
+                            $photo_name = "photo_".$lastid."_observation_".$results[0][idobs].".".pathinfo($_FILES['files']['name'][$key], PATHINFO_EXTENSION);
+                            
+                            //move photo
+                            $tmp_name = $_FILES["files"]["tmp_name"][$key];
+                            // basename() peut empêcher les attaques de système de fichiers;
+                            // la validation/assainissement supplémentaire du nom de fichier peut être approprié
+                            $name = basename($_FILES["files"]["name"][$key]);
+                            move_uploaded_file($tmp_name, ABSPATH.$this->photo_dir.$photo_name);
+                            
+                            $sql = "UPDATE iherba_photos SET nom_photo_final = '".$photo_name."' WHERE idphotos = ".$lastid;
+                            $wpdb->query($sql);
                         }
                        
                         
