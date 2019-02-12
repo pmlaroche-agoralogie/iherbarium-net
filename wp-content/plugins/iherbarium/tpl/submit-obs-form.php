@@ -1,5 +1,5 @@
 <h1 class="page-title">Soumettre une observation</h1>
-<form id="fileupload" action="?ihaction=thankyouobs" method="POST" enctype="multipart/form-data"> 
+<form id="fileupload" action="<?php echo get_bloginfo('wpurl')?>/observation/thankyou" method="POST" enctype="multipart/form-data"> 
 	<noscript>Nécessite l'exécution de scripts</noscript>
 	
 	<input type="hidden" name="id_user" value="<?php echo $user_id?>"/>
@@ -9,10 +9,10 @@
     
     <div id="dropzone" class="fade well">
     <div class="drophere">
-    Drop files here <br>or <br>
+    Déposez les fichiers ici <br>ou <br>
     <span class="btn btn-success fileinput-button">
         <i class="glyphicon glyphicon-plus"></i>
-        <span>Add files...</span>
+        <span>Ajouter des fichiers...</span>
         <!-- The file input field used as target for the file upload widget -->
         <input  type="file" name="files[]" multiple><!--  id="fileupload" -->
     </span>
@@ -28,9 +28,6 @@
     
     </div>
 
-    
-   
-    
     Commentaires:<br>
     <!--  input type="text" name="commentaires" value="">-->
     <textarea name="commentaires" class="commentaires"></textarea>
@@ -39,7 +36,7 @@
 		<div class="fileupload-buttons">
 			<button type="submit" class="btn btn-primary start">
 				<i class="glyphicon glyphicon-upload"></i>
-				<span>Start upload</span>
+				<span>Soumettre</span>
 			</button>
 		</div>
 	</div>

@@ -125,7 +125,8 @@ class iHerbarium {
             'carte/longitude/(.+)/latitude/(.+)/radius/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3),
             'utilisateur/(.+)/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1).'&offset='.$wp_rewrite->preg_index(2),
             'utilisateur/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1),
-            'observation/new/' => 'index.php?ihaction=newobs',
+            'observation/new' => 'index.php?ihaction=newobs',
+            'observation/thankyou' => 'index.php?ihaction=thankyouobs',
         );
         $newRules = $newRule + $rules;
         return $newRules;
@@ -182,7 +183,12 @@ class iHerbarium {
         
         if ($wp_query->get('ihaction') == "newobs")
         {
-            
+            $title = 'iHerbarium - Soumettre une observation';
+        }
+        
+        if ($wp_query->get('ihaction') == "thankyouobs")
+        {
+            $title = 'iHerbarium - Merci';
         }
         
         if ($title == ''){
@@ -266,7 +272,12 @@ class iHerbarium {
         
         if ($wp_query->get('ihaction') == "newobs")
         {
-            
+            $desc = 'iHerbarium - Soumettre une observation';
+        }
+        
+        if ($wp_query->get('ihaction') == "thankyouobs")
+        {
+            $desc = 'iHerbarium - Merci';
         }
         
         /*if ($desc == ''){
@@ -398,7 +409,7 @@ class iHerbarium {
             exit;
         }
         
-        //Submit newobs
+        //thank you newobs
         if ($wp_query->get('ihaction') == "thankyouobs")
         {
 

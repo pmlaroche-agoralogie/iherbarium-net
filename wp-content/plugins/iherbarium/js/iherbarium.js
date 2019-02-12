@@ -43,12 +43,12 @@ jQuery(function ($) {
         data.context = $('<div/>').addClass('file').appendTo('#files');
         
         $.each(data.files, function (index, file) {
-        		var node = $('<span/>').text(file.name);
+        		var node = $('<div/>').append($('<div class="name"/>').text(file.name));
             if (!index) {
                 node
                     .append(cancelButton.clone(true).data(data));
             }
-            node.appendTo(data.context);
+            node.append($('<div class="clearboth"/>')).appendTo(data.context);
         }
         );
         
