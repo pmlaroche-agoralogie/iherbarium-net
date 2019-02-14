@@ -14,6 +14,7 @@ include_once(plugin_dir_path( __FILE__ ).'utils.php');
 class iHerbarium {
     public $domaine_photo = "http://medias.iherbarium.fr";
     public $photo_dir = "medias/sources/";
+    public $photo_dir_min = "medias/vignettes/";
     
     public function __construct()
     {
@@ -514,6 +515,8 @@ class iHerbarium {
                             // la validation/assainissement supplémentaire du nom de fichier peut être approprié
                             $name = basename($_FILES["files"]["name"][$key]);
                             move_uploaded_file($tmp_name, ABSPATH.$this->photo_dir.$photo_name);
+                            
+                            redimensionner_image(ABSPATH.$this->photo_dir.$photo_name,200,ABSPATH.$this->photo_dir_min.$photo_name);
                             
                             $sql = "UPDATE iherba_photos SET nom_photo_final = '".$photo_name."' WHERE idphotos = ".$lastid;
                             $wpdb->query($sql);

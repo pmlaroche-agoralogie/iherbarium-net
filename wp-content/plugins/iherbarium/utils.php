@@ -50,3 +50,28 @@ function calcul_longitude_exif($exif){
     if ($exif["GPS"]["GPSLongitudeRef"] =="W")$longitude = -$longitude;
     return $longitude;
 }
+
+/* Fonction qui permet de redimensionner l'image que l'utilisateur nous a envoyé */
+function redimensionner_image($image_source,$taillemax,$image_destination){
+    $dim=getimagesize($image_source);  //la variable dim contiendra la taille de l'image passée en paramètre
+    $largeur=$dim[0];
+    $hauteur=$dim[1];
+    
+    //calcul des nouvelles dimensions de l'image
+    if($largeur>$hauteur){
+        $new_hauteur=$hauteur*(($taillemax/$largeur));
+        $new_largeur=$taillemax;
+    }
+    else {
+        $new_largeur=$largeur*(($taillemax)/$hauteur);
+        $new_hauteur=$taillemax;
+    }
+    
+    // Redimensionnement
+    $image_p = imagecreatetruecolor($new_largeur, $new_hauteur);
+    $image_cree = imagecreatefromjpeg($image_source);
+    imagecopyresampled($image_p, $image_cree, 0, 0, 0, 0, $new_largeur, $new_hauteur, $largeur, $hauteur);
+    
+    // on place l'image redimensionnée dans le répertoire repertoire_vignettes
+    imagejpeg($image_p,$image_destination, 100);
+}
