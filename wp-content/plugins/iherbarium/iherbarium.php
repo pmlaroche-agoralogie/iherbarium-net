@@ -404,7 +404,7 @@ class iHerbarium {
             else 
             {
                 include ('tpl/header.php');
-                echo 'Vous devez être connecté pour soummetre une observation.';
+                echo 'Vous devez être connecté pour soumetre une observation.';
                 include ('tpl/footer.php');
             }
                 
