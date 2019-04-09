@@ -318,10 +318,6 @@ class iHerbarium {
     function template_redirect_intercept() {
         global $wp_query;
         global $wpdb;
-        
-        //var_dump($wp_query->query_vars);
-        //var_dump($wp_query);
-        
 
         if ($wp_query->get('test')) {
             include ('tpl/header.php');
@@ -336,8 +332,7 @@ class iHerbarium {
                 $url = explode('observations/',$_SERVER['REQUEST_URI']);
                 $this->setCurrentPage($url[0]);
             }
-            //print_r($wp_query->query_vars);
-            //print_r($_SERVER);
+
             include ('tpl/header.php');
             echo $this->getListeObsHTML(10,(int)$wp_query->get('listeobs'));
             include ('tpl/footer.php');
@@ -345,7 +340,6 @@ class iHerbarium {
         }
         if ($wp_query->get('idobs')) {
             
-            /*add_filter('wp_title', 'iHerbarium - Observation n° ', 100);*/
             $amyid = explode('-',$wp_query->get('idobs'));
             $idObs = (int)$amyid[sizeof($amyid)-1];
             
@@ -354,7 +348,6 @@ class iHerbarium {
             exit;
         }
         if ($wp_query->get('ihaction') == "getphoto") 
-        //if (strpos($_SERVER['REQUEST_URI'],'/scripts/large.php') !== false)
         {
             $this->getIdsFromPhoto($idPhoto,$idObs);
             
@@ -422,8 +415,6 @@ class iHerbarium {
         //thank you newobs
         if ($wp_query->get('ihaction') == "thankyouobs")
         {
-
-            //print_r($_REQUEST);
             
             global $wpdb;
             $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
@@ -1173,10 +1164,7 @@ class iHerbarium {
     function getObsInventoryByZoneArray($longitude,$latitude,$radius,$limit,$offset=0)
     {
         global $wpdb;
-        
-        //$where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
-        //$where_inventory = $this->getWhereInventorySQL();
-        
+
         $sql = "SELECT distinct iherba_observations.idobs,
                                             iherba_observations.longitude,
                                             iherba_observations.latitude,
