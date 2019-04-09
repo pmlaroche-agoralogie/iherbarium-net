@@ -330,7 +330,7 @@ class iHerbarium {
             exit;
         }
 
-        if ($wp_query->get('listeobs') != "" || (strpos($wp_query->post->post_content,'[iHerbarium]') && sizeof($wp_query->posts) <2) ) {
+        if ($wp_query->get('listeobs') != "" ) {
             if (strpos($_SERVER['REQUEST_URI'],'observations/'))
             {
                 $url = explode('observations/',$_SERVER['REQUEST_URI']);
