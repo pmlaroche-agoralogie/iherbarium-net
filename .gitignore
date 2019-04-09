@@ -10,3 +10,4 @@ __ressource/
 wp-config.php
 sitemap.xml
 /medias
+/.htaccess
