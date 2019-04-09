@@ -87,7 +87,11 @@ class iHerbarium {
                 $radius = $atts['radius'];
             else 
                 $radius = 0.04;
-           $content .= $this->getCarteHTML($longitude,$latitude,$radius);
+            if (isset($atts['limit']))
+                $limit = $atts['limit'];
+            else
+                $limit = 0;
+           $content .= $this->getCarteHTML($longitude,$latitude,$radius,$limit);
         }
          
         return $content;
@@ -102,9 +106,13 @@ class iHerbarium {
             $latitude = $atts['latitude'];
             if (isset($atts['radius']))
                 $radius = $atts['radius'];
-                else
-                    $radius = 0.04;
-                    $content .= $this->getListeObsByZoneHTML($longitude,$latitude,$radius);
+            else
+                $radius = 0.04;
+            if (isset($atts['limit']))
+                $limit = $atts['limit'];
+            else
+                $limit = 0;
+                $content .= $this->getListeObsByZoneHTML($longitude,$latitude,$radius,$limit);
         }
         
         return $content;
@@ -1137,7 +1145,7 @@ class iHerbarium {
         return $p_sql;
     }
     
-    function getObsByZoneArray($longitude,$latitude,$radius,$limit=1)
+    function getObsByZoneArray($longitude,$latitude,$radius,$limit)
     {
         global $wpdb;
         $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
@@ -1157,17 +1165,17 @@ class iHerbarium {
                 GROUP BY iherba_observations.idobs
                 ORDER BY iherba_observations.idobs DESC";
         if ($limit)
-            $sql .= " LIMIT 0,250;";
+            $sql .= " LIMIT 0,".$limit.";";
         $results = $wpdb->get_results( $sql, ARRAY_A );
         return $results;
     }
     
-    function getObsInventoryByZoneArray($longitude,$latitude,$radius)
+    function getObsInventoryByZoneArray($longitude,$latitude,$radius,$limit,$offset=0)
     {
         global $wpdb;
         
-        $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
-        $where_inventory = $this->getWhereInventorySQL();
+        //$where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
+        //$where_inventory = $this->getWhereInventorySQL();
         
         $sql = "SELECT distinct iherba_observations.idobs,
                                             iherba_observations.longitude,
@@ -1184,16 +1192,18 @@ class iHerbarium {
                     AND ".$this->getWhereZoneSQL($longitude, $latitude, $radius)." 
                 GROUP BY iherba_determination.tropicosid
                 ORDER BY ".$this->getOrderInventorySQL();
+        if ($limit)
+            $sql .= " LIMIT ".$offset.",".$limit.";";
         $results = $wpdb->get_results( $sql, ARRAY_A );
         return $results;
     }
 
     
-    function getCarteHTML($longitude,$latitude,$radius)
+    function getCarteHTML($longitude,$latitude,$radius,$limit)
     {
         $content = "";
 
-        $results = $this->getObsByZoneArray($longitude, $latitude, $radius);
+        $results = $this->getObsByZoneArray($longitude, $latitude, $radius,$limit);
         if(sizeof($results)>0)
         {
             $content .= '
@@ -1256,11 +1266,11 @@ class iHerbarium {
         return $content;
     }
     
-    function getListeObsByZoneHTML($longitude,$latitude,$radius)
+    function getListeObsByZoneHTML($longitude,$latitude,$radius,$limit)
     {
         $content = "";
         
-        $results = $this->getObsInventoryByZoneArray($longitude, $latitude, $radius);
+        $results = $this->getObsInventoryByZoneArray($longitude, $latitude, $radius,$limit);
         if(sizeof($results)>0)
         {
             
@@ -1296,7 +1306,7 @@ class iHerbarium {
             }
             
             $content = '<div class="inventory"><div class="h2">Inventaires des especes déterminées</div>   
-                        <br/>Nombre d\'observations dans cette zone : '.sizeof($this->getObsByZoneArray($longitude, $latitude, $radius,0)).'
+                        <br/>Nombre d\'observations dans cette zone : '.sizeof($this->getObsByZoneArray($longitude, $latitude, $radius,$limit)).'
                         <br/>Nombre de famille différentes dans cette zone : '.$nbFamily.'
                         <br/>Nombre de genres différents dans cette zone : '.$nbGenre.'
                         <br/>Nombre d\'espèces différentes dans cette zone : '.$nbSpecies.$content;
