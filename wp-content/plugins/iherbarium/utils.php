@@ -90,6 +90,14 @@ function calcul_longitude_exif($exif){
     return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
 }
 
+
+function date_prise_de_vue_exif($exif){
+    $dateprisevue = $exif["EXIF"]["DateTimeOriginal"];
+    
+    return $dateprisevue;
+}
+
+
 /* Fonction qui permet de redimensionner l'image que l'utilisateur nous a envoyé */
 function redimensionner_image($image_source,$taillemax,$image_destination){
     $dim=getimagesize($image_source);  //la variable dim contiendra la taille de l'image passée en paramètre

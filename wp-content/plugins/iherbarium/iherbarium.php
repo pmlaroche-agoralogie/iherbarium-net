@@ -503,8 +503,9 @@ class iHerbarium {
                                 $longitude = calcul_longitude_exif($exif);
                                 $latitude = calcul_latitude_exif($exif);
                             }
-                            $sql=$wpdb->prepare("INSERT INTO iherba_photos (id_obs,latitude_exif,longitude_exif,nom_photo_initial,all_exif_fields,date_depot)
-                                        VALUES (%d,%f,%f,%s,%s,%s)",$results[0][idobs],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'));
+                            $sql=$wpdb->prepare("INSERT INTO iherba_photos (id_obs,latitude_exif,longitude_exif,nom_photo_initial,all_exif_fields,date_depot,DateTimeOriginal)
+                                        VALUES (%d,%f,%f,%s,%s,%s,%s)",$results[0][idobs],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'),date_prise_de_vue_exif($exif));
+                            
                             $wpdb->query($sql);
                             $lastid = $wpdb->insert_id;
                             $photo_name = "photo_".$lastid."_observation_".$results[0][idobs].".".pathinfo($_FILES['files']['name'][$key], PATHINFO_EXTENSION);
@@ -1053,7 +1054,7 @@ class iHerbarium {
         if ( $row2['date'] != '')
             $authorDeterminObs .= " (".$row2['date'].") ";;
         
-        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$lobervation['idobs'];
+        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$idObs;
         $urlgoogle =  'http://chart.apis.google.com/chart?chs=420x420&cht=qr&chld=H&chl='.urlencode($urlqrencode);
         $position=convertSexa2coord($row["latitude"],$row["longitude"]);
         
