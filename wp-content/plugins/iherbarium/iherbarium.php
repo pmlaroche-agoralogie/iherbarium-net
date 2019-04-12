@@ -1053,7 +1053,7 @@ class iHerbarium {
         if ( $row2['date'] != '')
             $authorDeterminObs .= " (".$row2['date'].") ";;
         
-        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$lobervation['uuid_specimen'];
+        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$lobervation['idobs'];
         $urlgoogle =  'http://chart.apis.google.com/chart?chs=420x420&cht=qr&chld=H&chl='.urlencode($urlqrencode);
         $position=convertSexa2coord($row["latitude"],$row["longitude"]);
         
