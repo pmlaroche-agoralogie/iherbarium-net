@@ -25,7 +25,10 @@ function convertSexa2coord($lat, $long)
     return convertSexa1coord($lat,'lat'). " , ".convertSexa1coord($long,'long');
 }
 
+
 /*Fonction qui calcule la latitude contenue dans l'image envoyée */
+/* ORIGINAL
+
 function calcul_latitude_exif($exif){
     $lat1=$exif["GPS"]["GPSLatitude"][0];
     $lat1decoupee=explode("/",$lat1);
@@ -37,8 +40,9 @@ function calcul_latitude_exif($exif){
     if ($exif["GPS"]["GPSLatitudeRef"] =="S")$latitude = -$latitude;
     return $latitude;
 }
-
+*/
 /*fonction permettant d'obtenir la longitude contenue dans l'image */
+/* ORIGINAL
 function calcul_longitude_exif($exif){
     $long1=$exif["GPS"]["GPSLongitude"][0];
     $long1decoupee=explode("/",$long1);
@@ -49,6 +53,41 @@ function calcul_longitude_exif($exif){
     
     if ($exif["GPS"]["GPSLongitudeRef"] =="W")$longitude = -$longitude;
     return $longitude;
+}
+*/
+function gps2Num($coordPart) {
+
+    $parts = explode('/', $coordPart);
+
+    if (count($parts) <= 0)
+        return 0;
+
+    if (count($parts) == 1)
+        return $parts[0];
+
+    return floatval($parts[0]) / floatval($parts[1]);
+}
+
+function calcul_latitude_exif($exif){
+    $exifCoord = $exif["GPS"]["GPSLatitude"];
+    $hemi = $exif["GPS"]["GPSLatitude"];
+    
+    $degrees = count($exifCoord) > 0 ? gps2Num($exifCoord[0]) : 0;
+    $minutes = count($exifCoord) > 1 ? gps2Num($exifCoord[1]) : 0;
+    $seconds = count($exifCoord) > 2 ? gps2Num($exifCoord[2]) : 0;
+    $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+    return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+}
+
+function calcul_longitude_exif($exif){
+    $exifCoord = $exif["GPS"]["GPSLongitude"];
+    $hemi = $exif["GPS"]["GPSLongitudeRef"];
+
+    $degrees = count($exifCoord) > 0 ? gps2Num($exifCoord[0]) : 0;
+    $minutes = count($exifCoord) > 1 ? gps2Num($exifCoord[1]) : 0;
+    $seconds = count($exifCoord) > 2 ? gps2Num($exifCoord[2]) : 0;
+    $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+    return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
 }
 
 /* Fonction qui permet de redimensionner l'image que l'utilisateur nous a envoyé */
