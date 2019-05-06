@@ -1039,6 +1039,7 @@ class iHerbarium {
     {
         global $wpdb;
         
+        $idObs = intval($idObs);
         $results = $this->getObsArray($idObs);
         $row = $results[0];//print_r($row);
         
