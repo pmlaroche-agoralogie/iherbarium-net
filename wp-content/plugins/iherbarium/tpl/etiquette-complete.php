@@ -4,7 +4,7 @@
 		<div>
 		<span class="important">N° obs.</span> : <?php echo $row['idobs'];?><br>
 		<span class="important">Récolteur</span> : <?php echo $authorRecolt;?><br>
-		<span class="important">Date de récolte</span> : <?php echo $row['date_depot'];?><br>
+		<span class="important">Date de récolte</span> : <?php echo $row['original_timestamp'];?><br>
 		<span class="important">Localisation</span> : <?php echo $position;?><br>
 		<span class="important">Notes</span> : <?php echo $row['commentaires'];?><br><br>
 		
