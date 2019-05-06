@@ -92,8 +92,10 @@ function calcul_longitude_exif($exif){
 
 
 function date_prise_de_vue_exif($exif){
-    $dateprisevue = $exif["EXIF"]["DateTimeOriginal"];
-    
+	$dateprisevue = '';
+	if (isset($exif["EXIF"]["DateTimeOriginal"])){
+		$dateprisevue = $exif["EXIF"]["DateTimeOriginal"];
+	}    
     return $dateprisevue;
 }
 

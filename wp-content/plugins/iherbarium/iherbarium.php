@@ -487,9 +487,13 @@ class iHerbarium {
                                     $longitude = calcul_longitude_exif($exif);
                                     $latitude = calcul_latitude_exif($exif);
                                 }
-
-                                $sql = $wpdb->prepare("INSERT INTO iherba_observations (id_user,uuid_observation,commentaires,latitude,longitude,date_depot) 
-                                                    VALUES (%d,%s,%s,%f,%f,%s)",$typo_id,$_REQUEST['uuid_obs'],$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'));
+								$dateprisevue = '';
+								if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'EXIF', true))
+                                {
+									$dateprisevue = date_prise_de_vue_exif($exif);
+								} 
+                                $sql = $wpdb->prepare("INSERT INTO iherba_observations (id_user,uuid_observation,commentaires,latitude,longitude,date_depot,original_timestamp) 
+                                                    VALUES (%d,%s,%s,%f,%f,%s)",$typo_id,$_REQUEST['uuid_obs'],$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'),$date_prisevue);
                                 $wpdb->query($sql);
                                 $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
                                 $results = $wpdb->get_results( $sql , ARRAY_A );
@@ -1294,11 +1298,11 @@ class iHerbarium {
                 $nbSpecies++;
             }
             
-            $content = '<div class="inventory"><div class="h2">Inventaires des especes déterminées</div>   
+            $content = '<div class="inventory"><div class="h2">Inventaires des especes déterminées</div>   
                         <br/>Nombre d\'observations dans cette zone : '.sizeof($this->getObsByZoneArray($longitude, $latitude, $radius,$limit)).'
-                        <br/>Nombre de famille différentes dans cette zone : '.$nbFamily.'
-                        <br/>Nombre de genres différents dans cette zone : '.$nbGenre.'
-                        <br/>Nombre d\'espèces différentes dans cette zone : '.$nbSpecies.$content;
+                        <br/>Nombre de famille différentes dans cette zone : '.$nbFamily.'
+                        <br/>Nombre de genres différents dans cette zone : '.$nbGenre.'
+                        <br/>Nombre d\'espèces différentes dans cette zone : '.$nbSpecies.$content;
             $content .="</div>";
 
         }
