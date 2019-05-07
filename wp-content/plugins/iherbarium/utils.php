@@ -124,3 +124,44 @@ function redimensionner_image($image_source,$taillemax,$image_destination){
     // on place l'image redimensionnée dans le répertoire repertoire_vignettes
     imagejpeg($image_p,$image_destination, 100);
 }
+
+function get_adress_from_loc($latitude,$longitude){	
+	
+	$town = '';
+	
+	$data = array(
+	  'lat'       => $latitude,
+	  'lon'    => $longitude,
+	  'format'     => 'json',
+	  'addressdetails' => 1,
+	);
+	
+	
+	$url = 'https://nominatim.openstreetmap.org/reverse?'.http_build_query($data);
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+	$geopos = curl_exec($ch);
+	curl_close($ch);
+
+	if ($geopos != FALSE){
+		$json_data = json_decode($geopos, true);
+		if (isset($json_data['address'])){
+			$array_address = $json_data['address'];
+		
+			$useful_adress = array();
+		  
+			if(isset($array_address['village']))$useful_adress[]=$array_address['village'];
+			if(isset($array_address['suburb']))if(!in_array($array_address['suburb'],$useful_adress))$useful_adress[]=$array_address['suburb'];
+			if(isset($array_address['city']))if(!in_array($array_address['city'],$useful_adress))$useful_adress[]=$array_address['city'];
+			if(isset($array_address['county']))if(!in_array($array_address['county'],$useful_adress))$useful_adress[]=$array_address['county'];
+			
+			if (count($useful_adress) > 0){
+				$town = implode(' - ',$useful_adress);
+				$town = $town." [OSM]";
+			}
+		}
+	}
+	
+	return $town;
+}
