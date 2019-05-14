@@ -443,6 +443,7 @@ textarea {
   /* 2 */
 
 }
+
 /* ==========================================================================
    Tables
    ========================================================================== */
@@ -735,6 +736,41 @@ BUTTONS
   background-image: -o-linear-gradient(top, #1681c4, #1990db);
   background-image: linear-gradient(to bottom, #1681c4, #1990db);
 }
+
+
+/* Formulaire de saisie des noms scientifiques communs */
+#saisie_noms{display:none;background-color:#d1ddd5;padding:20px 10px 15px 30px;width:70%;position:relative;margin-bottom:20px;}
+.btn_open{font-style:italic;text-decoration:underline;cursor:pointer;color:#013b1b;}
+.btn_close{background-image:url(../../../../plugins/iherbarium/img/btn_close.png);background-repeat:no-repeat;width:15px;height:13px;display:block;cursor:pointer;position:absolute;right:10px;top:10px;}
+#form_saisie_noms input{font-size:100%;font-family:"Georgia", Cambria, Times New Roman, Times, serif;}
+
+
+/* Styles pour auto completion */
+.AutoCompleteDivListeStyle{
+font-family:"Georgia", Cambria, Times New Roman, Times, serif;
+font-size: 100%;
+text-align:left;
+}
+.AutoCompleteDivAct{
+background-color: #013b1b;
+color: #FFFFFF;
+}
+.AutoCompleteDivListeStyle span{
+	padding-left:3px;
+	cursor:pointer;
+}
+
+/* boutons précédent / suivant */
+p.btn_nav{margin-top:30px;margin-bottom:20px;}
+a.btn_suiv,a.btn_prec{padding:8px;border-radius:5px;background-color:#013b1b;color:#FFFFFF;text-decoration:none;}
+a.btn_suiv:hover,a.btn_prec:hover,a.btn_suiv:visited,a.btn_prec:visited,a.btn_suiv:visited:hover,a.btn_prec:visited:hover{color:#FFFFFF;text-decoration:none;}
+
+
+/* footer */
+p.source-org.copyright{text-align:center;}
+
+
+
 /*
 BASE (MOBILE) SIZE
 This are the mobile styles. It's what people see on their phones. If

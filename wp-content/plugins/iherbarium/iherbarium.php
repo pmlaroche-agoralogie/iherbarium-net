@@ -339,10 +339,13 @@ class iHerbarium {
             exit;
         }
         if ($wp_query->get('idobs')) {
-            
             $amyid = explode('-',$wp_query->get('idobs'));
             $idObs = (int)$amyid[sizeof($amyid)-1];
-            
+			
+			if ($_REQUEST['nom_commun'] != '' || $_REQUEST['nom_scientifique'] != ''){
+				$ok = $this->setNamesObservation($idObs,$_REQUEST['nom_commun'],$_REQUEST['nom_scientifique']);
+			}
+			            
             echo $this->getObsHTML($idObs);   
     
             exit;
@@ -637,7 +640,26 @@ class iHerbarium {
         $content .= '<div class="header"><h1>Observation numéro : '.$idObs.'</h1></div>';
         $content .= '<div class="contenu">';
         $content .= $this->getDeterminationHTML($idObs);
-        
+
+			$user = wp_get_current_user();
+			if ($user->ID != 0 && $user->ID != ''){
+				$content .= '<p class="btn_open" onClick="document.getElementById(\'saisie_noms\').style.display=\'block\';">Donnez un nom commun ou scientifique</p>';
+				$content .= '<div id="saisie_noms">';	
+					$content .= '<form id="form_saisie_noms" name="form_saisie_noms" method="post" action="">';
+					$content .= '<span class="btn_close" onClick="document.getElementById(\'saisie_noms\').style.display=\'none\';"></span>';
+					$content .= '<script type="text/javascript" src="/wp-content/plugins/iherbarium/completion/completion_taxonomy.js"></script>';
+					$content .= '<p><input type="checkbox" name="limite_france" id="limite_france" checked="checked"/> Limité à la France</p>';
+					$content .= '<p>Donnez un nom commun : <input name="nom_commun" type="text" id="nom_commun" size="40" value=""></p>';
+					$content .= '<p>Donnez un nom scientifique : <input name="nom_scientifique" type="text" id="nom_scientifique" autocomplete="off" size="60" value="" disable="disable"></p>';					
+					$content .= '<p style="text-align:right;"><input type="button" name="button" id="button" value="Valider cette détermination" onClick="submit();" /></p>';
+					$content .= '<p><input type="hidden" name="idobs" id="idobs" value="'.$idObs.'" /></p>';
+					$content .= '<p><input type="hidden" name="genre_obs" id="genre_obs" value="'.$results[0]['genre_obs'].'" /></p>';
+					$content .= '</form>';	
+				$content .= '</div>';
+			}else{
+				$content .= '<p><a href="/login/" class="btn_open">Connectez-vous si vous désirez donnez un nom commun ou scientifique</a></p>';
+			}
+
         $content .= 'Commentaires : '.utf8_decode($results[0]['commentaires']).'<br><br>';
         $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
         $content .= '<br>';
@@ -759,23 +781,24 @@ class iHerbarium {
             
             $content .= '</div></div>';
         }
+		$content .= '<p class="btn_nav">';
         if ($offset != 0)
         {
             if ($user != '')
-                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset-1).'/">Précédent</a>';
+                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset-1).'/" class="btn_prec" >Précédent</a>';
             else
-                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/">Précédent</a>';
+                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset-1).'/" class="btn_prec">Précédent</a>';
         }
         if ( ($total/$limit) > $offset)
         {
             if ($offset != 0)
                 $content .= "&nbsp;&nbsp;&nbsp;&nbsp;";
             if ($user != '')
-                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset+1).'/">Suivant</a>';
+                $content .= '<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$user.'/'.($offset+1).'/" class="btn_suiv">Suivant</a>';
             else
-                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/">Suivant</a>';
+                $content .= '<a href="'.get_bloginfo('wpurl').'/observations/'.($offset+1).'/" class="btn_suiv">Suivant</a>';
         }
-            
+        $content .= '</p>';
         return $content;
     }
     
@@ -1311,6 +1334,46 @@ class iHerbarium {
         }
         return $content;
     }
+	
+	
+	function setNamesObservation($idObs,$nom_commun,$nom_scientifique){
+		global $wpdb;
+
+		$user = wp_get_current_user();
+	  	$typo_id = $this->getIDbyUUID($user->data->user_login);
+		if (!$typo_id){
+			$typo_id = $this->setIDbyUUID($user->data->user_login);
+		}
+		if (!$typo_id){
+          	return 0;
+		}	
+		if ($nom_commun != ''){
+			$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,nom_commun,id_user,date,creation_timestamp) VALUES (%d,%s,%s,%s,%s)",$idObs,stripslashes($nom_commun),$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'));
+            $wpdb->query($sql_insert);
+		}else{
+					
+			if ($nom_scientifique != ''){
+				$tab_nom_scientifique = explode("/ ", $nom_scientifique);
+				$fiche = $tab_nom_scientifique[1];
+				  
+				$sql = $wpdb->prepare("SELECT * FROM iherba_taxref12_es WHERE CD_NOM = %s",$fiche);
+				$results = $wpdb->get_results( $sql , ARRAY_A );            
+				if(sizeof($results)>0){
+	
+					foreach ($results as $ligne){
+						$referentiel = 'taxref';
+						$tropicosfamilyid = '';
+						$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,referentiel,tropicosid,nom_commun,nom_scientifique,genre,famille,tropicosgenusid,tropicosfamilyid,reftaxonomiqueplusid,scientificname_wo_authors,scientificname_html,id_user,date,creation_timestamp) VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",$idObs,$referentiel,$ligne['CD_NOM'],$ligne['NOM_VERN'],$ligne['NOM_COMPLET'],$ligne['LB_NOM1'],$ligne['FAMILLE'],$ligne['CD_TAXSUP'],$tropicosfamilyid,$referentiel.':'.$ligne['CD_NOM'],$ligne['LB_NOM'],$ligne['NOM_COMPLET_HTML'],$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'));
+									
+						$wpdb->query($sql_insert);
+					}
+				}
+	
+			}
+		}
+	
+		return 1;
+	}
     
 }
 
