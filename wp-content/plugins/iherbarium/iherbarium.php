@@ -1365,7 +1365,7 @@ class iHerbarium {
 					foreach ($results as $ligne){
 						$referentiel = 'taxref';
 						$tropicosfamilyid = '';
-						$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,referentiel,tropicosid,nom_commun,nom_scientifique,genre,famille,tropicosgenusid,tropicosfamilyid,reftaxonomiqueplusid,scientificname_wo_authors,scientificname_html,id_user,date,creation_timestamp,probabilite) VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d)",$idObs,$referentiel,$ligne['CD_NOM'],$ligne['NOM_VERN'],$ligne['NOM_COMPLET'],$ligne['LB_NOM1'],$ligne['FAMILLE'],$ligne['CD_TAXSUP'],$tropicosfamilyid,$referentiel.':'.$ligne['CD_NOM'],$ligne['LB_NOM'],$ligne['NOM_COMPLET_HTML'],$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'),$proba;
+						$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,referentiel,tropicosid,nom_commun,nom_scientifique,genre,famille,tropicosgenusid,tropicosfamilyid,reftaxonomiqueplusid,scientificname_wo_authors,scientificname_html,id_user,date,creation_timestamp,probabilite) VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d)",$idObs,$referentiel,$ligne['CD_NOM'],$ligne['NOM_VERN'],$ligne['NOM_COMPLET'],$ligne['LB_NOM1'],$ligne['FAMILLE'],$ligne['CD_TAXSUP'],$tropicosfamilyid,$referentiel.':'.$ligne['CD_NOM'],$ligne['LB_NOM'],$ligne['NOM_COMPLET_HTML'],$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'),$proba);
 									
 						$wpdb->query($sql_insert);
 					}
