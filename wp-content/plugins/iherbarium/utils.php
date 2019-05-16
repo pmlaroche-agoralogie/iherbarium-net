@@ -132,7 +132,7 @@ function get_adress_from_loc($latitude,$longitude){
 	$data = array(
 	  'lat'       => $latitude,
 	  'lon'    => $longitude,
-	  'format'     => 'json',
+	  'format'     => 'jsonv2',
 	  'addressdetails' => 1,
 	);
 	
@@ -161,6 +161,7 @@ function get_adress_from_loc($latitude,$longitude){
 				$town = implode(' - ',$useful_adress);
 				$town = $town." [OSM]";
 			}
+		$town = $json_data['display_name']." [OSM]";
 		}
 	}
 	
