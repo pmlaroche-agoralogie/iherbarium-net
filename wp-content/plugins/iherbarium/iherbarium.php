@@ -1348,11 +1348,13 @@ class iHerbarium {
           	return 0;
 		}	
 		if ($nom_commun != ''){
-			$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,nom_commun,id_user,date,creation_timestamp) VALUES (%d,%s,%s,%s,%s)",$idObs,stripslashes($nom_commun),$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'));
+			$proba = 80;
+			$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,nom_commun,id_user,date,creation_timestamp,probabilite) VALUES (%d,%s,%s,%s,%s,%d)",$idObs,stripslashes($nom_commun),$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'),$proba);
             $wpdb->query($sql_insert);
 		}else{
 					
 			if ($nom_scientifique != ''){
+				$proba = 95;
 				$tab_nom_scientifique = explode("/ ", $nom_scientifique);
 				$fiche = $tab_nom_scientifique[1];
 				  
@@ -1363,7 +1365,7 @@ class iHerbarium {
 					foreach ($results as $ligne){
 						$referentiel = 'taxref';
 						$tropicosfamilyid = '';
-						$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,referentiel,tropicosid,nom_commun,nom_scientifique,genre,famille,tropicosgenusid,tropicosfamilyid,reftaxonomiqueplusid,scientificname_wo_authors,scientificname_html,id_user,date,creation_timestamp) VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",$idObs,$referentiel,$ligne['CD_NOM'],$ligne['NOM_VERN'],$ligne['NOM_COMPLET'],$ligne['LB_NOM1'],$ligne['FAMILLE'],$ligne['CD_TAXSUP'],$tropicosfamilyid,$referentiel.':'.$ligne['CD_NOM'],$ligne['LB_NOM'],$ligne['NOM_COMPLET_HTML'],$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'));
+						$sql_insert = $wpdb->prepare("INSERT INTO iherba_determination (id_obs,referentiel,tropicosid,nom_commun,nom_scientifique,genre,famille,tropicosgenusid,tropicosfamilyid,reftaxonomiqueplusid,scientificname_wo_authors,scientificname_html,id_user,date,creation_timestamp,probabilite) VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d)",$idObs,$referentiel,$ligne['CD_NOM'],$ligne['NOM_VERN'],$ligne['NOM_COMPLET'],$ligne['LB_NOM1'],$ligne['FAMILLE'],$ligne['CD_TAXSUP'],$tropicosfamilyid,$referentiel.':'.$ligne['CD_NOM'],$ligne['LB_NOM'],$ligne['NOM_COMPLET_HTML'],$typo_id,date('Y-m-d'),date('Y-m-d H:m:s'),$proba;
 									
 						$wpdb->query($sql_insert);
 					}
