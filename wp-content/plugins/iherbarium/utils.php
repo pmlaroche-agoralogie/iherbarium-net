@@ -132,7 +132,7 @@ function get_adress_from_loc($latitude,$longitude){
 	$data = array(
 	  'lat'       => $latitude,
 	  'lon'    => $longitude,
-	  'format'     => 'json',
+	  'format'     => 'jsonv2',
 	  'addressdetails' => 1,
 	);
 	
@@ -150,7 +150,8 @@ function get_adress_from_loc($latitude,$longitude){
 			$array_address = $json_data['address'];
 		
 			$useful_adress = array();
-		  
+			if(isset($array_address['house_number']))$useful_adress[]=$array_address['house_number'];
+		  if(isset($array_address['road']))$useful_adress[]=$array_address['road'];
 			if(isset($array_address['village']))$useful_adress[]=$array_address['village'];
 			if(isset($array_address['suburb']))if(!in_array($array_address['suburb'],$useful_adress))$useful_adress[]=$array_address['suburb'];
 			if(isset($array_address['city']))if(!in_array($array_address['city'],$useful_adress))$useful_adress[]=$array_address['city'];
@@ -160,6 +161,7 @@ function get_adress_from_loc($latitude,$longitude){
 				$town = implode(' - ',$useful_adress);
 				$town = $town." [OSM]";
 			}
+		$town = $json_data['display_name']." [OSM]";
 		}
 	}
 	
