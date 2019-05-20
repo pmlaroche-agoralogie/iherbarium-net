@@ -483,7 +483,7 @@ class iHerbarium {
                         else 
                         {
 							$is_image = true;						
-							if (strpos($_FILES["files"]["name"],".mp4") !== false){ 
+							if (strpos($_FILES["files"]["name"][$key],".mp4") !== false){ 
 								$is_image = false;
 							}
 
@@ -687,18 +687,16 @@ class iHerbarium {
         $content .= 'Cette observation a été déposée le '.$results[0]['date_depot'].' par l\'utilisateur : 
 <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($results[0]['id_user']).'/">'.$this->getDisplayNamebyID($results[0]['id_user']).'</a><br>';
        
-		
+		$content .= 'Voici les informations constituant cette observation : <br>';
 		$sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$idObs;
         $results_photo = $wpdb->get_results( $sql , ARRAY_A );
         foreach ($results_photo as $row)
         /*TODO: changer url..., canonical url*/
         {
 			
-			if (strpos($row['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
-				 $content .= 'Voici les informations constituant cette observation : <br>';
-				$content .= '<video controls width="250"><source src="/medias/sources/'.$row['nom_photo_final'].'" type="video/mp4"></video>';
+			if (strpos($row['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo				
+				$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'"><img style="margin:0;" src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
 			}else{
-				 $content .= 'Voici les images constituant cette observation : <br>';
 				$content .= '
 				  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'" 
 					style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'\')">
@@ -803,7 +801,7 @@ class iHerbarium {
 				$url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
 			
 				if (strpos($row_photo['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
-					$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'"><img src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
+					$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'"><img style="margin:0;" src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
 				}else{	  
 				              
 					$content .= '
@@ -858,8 +856,9 @@ class iHerbarium {
        
         $content = $this->getHeaderHTML();
 		if (strpos($results[0]['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
-				$content .= $texte_licence.'
+				$content .= $texte_licence.'				
 				<br>'; // ici afficher le bloc video
+				$content .= '<video controls width="250"><source src="/medias/sources/'.$results[0]['nom_photo_final'].'" type="video/mp4"></video>';
 		}else{
 				$content .= $texte_licence.'
 				<br>
