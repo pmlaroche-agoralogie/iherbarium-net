@@ -511,8 +511,9 @@ class iHerbarium {
 										$dateprisevue = date_prise_de_vue_exif($exif);
 									} 
 								}
+							  $uuid_specimen = $this->getUUID();
                                 $sql = $wpdb->prepare("INSERT INTO iherba_observations (id_user,uuid_observation,commentaires,latitude,longitude,date_depot,original_timestamp,address) 
-                                                    VALUES (%d,%s,%s,%f,%f,%s,%s,%s)",$typo_id,$_REQUEST['uuid_obs'],$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'),$dateprisevue,$address);
+                                                    VALUES (%d,%s,%s,%s,%f,%f,%s,%s,%s)",$typo_id,$_REQUEST['uuid_obs'],$uuid_specimen,$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'),$dateprisevue,$address);
                                 $wpdb->query($sql);
                                 $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
                                 $results = $wpdb->get_results( $sql , ARRAY_A );
