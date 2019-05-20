@@ -47,6 +47,7 @@ class iHerbarium {
         wp_register_script('jquery-fileupload', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload.js',array(),false,true);
         wp_register_script('jquery-fileupload-process', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-process.js',array(),false,true);
         wp_register_script('jquery-fileupload-image', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-image.js',array(),false,true);
+		wp_register_script('jquery-fileupload-video', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-video.js',array(),false,true);
         wp_register_script('jquery-fileupload-validate', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-validate.js',array(),false,true);
         
        // wp_register_script('jquery-fileupload-ui', plugin_dir_url( __FILE__ ) . 'js/jquery.fileupload-ui.js',array(),false,true);
@@ -63,6 +64,7 @@ class iHerbarium {
         wp_enqueue_script('jquery-fileupload' );
         wp_enqueue_script('jquery-fileupload-process');
         wp_enqueue_script('jquery-fileupload-image');
+		 wp_enqueue_script('jquery-fileupload-video');
         wp_enqueue_script('jquery-fileupload-validate');
        // wp_enqueue_script( 'jquery-fileupload-ui' );
     //    wp_enqueue_script( 'jquery-fileupload-jquery-ui' );
@@ -458,6 +460,9 @@ class iHerbarium {
                 }
                 else 
                 {
+
+
+
                     //enregister
                     if ($_REQUEST['uuid_obs'])
                     {
@@ -477,26 +482,35 @@ class iHerbarium {
                         }
                         else 
                         {
+							$is_image = true;						
+							if (strpos($_FILES["files"]["name"],".mp4") !== false){ 
+								$is_image = false;
+							}
+
+
                             //save info
                             global $wpdb;
                             $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
                             $results = $wpdb->get_results( $sql , ARRAY_A );
                             if (!$results)
                             {
+
                                 $longitude = 0;
                                 $latitude = 0;
 								$address = '';
-                                if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
-                                { 
-                                    $longitude = calcul_longitude_exif($exif);
-                                    $latitude = calcul_latitude_exif($exif);
-									$address = get_adress_from_loc($latitude,$longitude);
-                                }
 								$dateprisevue = '';
-								if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'EXIF', true))
-                                {
-									$dateprisevue = date_prise_de_vue_exif($exif);
-								} 
+								if ($is_image){
+									if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
+									{ 
+										$longitude = calcul_longitude_exif($exif);
+										$latitude = calcul_latitude_exif($exif);
+										$address = get_adress_from_loc($latitude,$longitude);
+									}
+									if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'EXIF', true))
+									{
+										$dateprisevue = date_prise_de_vue_exif($exif);
+									} 
+								}
                                 $sql = $wpdb->prepare("INSERT INTO iherba_observations (id_user,uuid_observation,commentaires,latitude,longitude,date_depot,original_timestamp,address) 
                                                     VALUES (%d,%s,%s,%f,%f,%s,%s,%s)",$typo_id,$_REQUEST['uuid_obs'],$_REQUEST['commentaires'],$latitude,$longitude,date('Y-m-d'),$dateprisevue,$address);
                                 $wpdb->query($sql);
@@ -507,11 +521,13 @@ class iHerbarium {
                             //save info photo
                             $longitude = 0;
                             $latitude = 0;
-                            if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
-                            {
-                                $longitude = calcul_longitude_exif($exif);
-                                $latitude = calcul_latitude_exif($exif);
-                            }
+							if ($is_image){
+								if($exif=exif_read_data($_FILES["files"]["tmp_name"][$key], 'GPS', true))
+								{
+									$longitude = calcul_longitude_exif($exif);
+									$latitude = calcul_latitude_exif($exif);
+								}
+							}
                             $sql=$wpdb->prepare("INSERT INTO iherba_photos (id_obs,latitude_exif,longitude_exif,nom_photo_initial,all_exif_fields,date_depot,DateTimeOriginal)
                                         VALUES (%d,%f,%f,%s,%s,%s,%s)",$results[0][idobs],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'),date_prise_de_vue_exif($exif));
                             
@@ -524,11 +540,14 @@ class iHerbarium {
                             // basename() peut empêcher les attaques de système de fichiers;
                             // la validation/assainissement supplémentaire du nom de fichier peut être approprié
                             $name = basename($_FILES["files"]["name"][$key]);
-                            move_uploaded_file($tmp_name, ABSPATH.$this->photo_dir.$photo_name);
-                            
-                            redimensionner_image(ABSPATH.$this->photo_dir.$photo_name,200,ABSPATH.$this->photo_dir_min.$photo_name);
-                            redimensionner_image(ABSPATH.$this->photo_dir.$photo_name,1024,ABSPATH.$this->photo_dir_big.$photo_name);
-                            
+
+                            $upload_ok = move_uploaded_file($tmp_name, ABSPATH.$this->photo_dir.$photo_name);
+                           
+						    if ($is_image){
+                            	redimensionner_image(ABSPATH.$this->photo_dir.$photo_name,200,ABSPATH.$this->photo_dir_min.$photo_name);
+                            	redimensionner_image(ABSPATH.$this->photo_dir.$photo_name,1024,ABSPATH.$this->photo_dir_big.$photo_name);
+                            }
+							
                             $sql = "UPDATE iherba_photos SET nom_photo_final = '".$photo_name."' WHERE idphotos = ".$lastid;
                             $wpdb->query($sql);
                         }
@@ -665,17 +684,24 @@ class iHerbarium {
         $content .= '<br>';
         $content .= 'Cette observation a été déposée le '.$results[0]['date_depot'].' par l\'utilisateur : 
 <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($results[0]['id_user']).'/">'.$this->getDisplayNamebyID($results[0]['id_user']).'</a><br>';
-        $content .= 'Voici les images constituant cette observation : <br>';
+       
 		
 		$sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$idObs;
         $results_photo = $wpdb->get_results( $sql , ARRAY_A );
         foreach ($results_photo as $row)
         /*TODO: changer url..., canonical url*/
         {
-            $content .= '
-              <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'" 
-                style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'\')">
-              </a>';
+			
+			if (strpos($row['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
+				 $content .= 'Voici les informations constituant cette observation : <br>';
+				$content .= '<video controls width="250"><source src="/medias/sources/'.$row['nom_photo_final'].'" type="video/mp4"></video>';
+			}else{
+				 $content .= 'Voici les images constituant cette observation : <br>';
+				$content .= '
+				  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/photo/large/'.$row['nom_photo_final'].'" 
+					style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row['nom_photo_final'].'\')">
+				  </a>';
+			}
         }	  
 
         if (($results[0]['latitude']!=0 OR $results[0]['longitude']!=0) AND $results[0]['public']=='oui')
@@ -772,11 +798,17 @@ class iHerbarium {
             $results_photo = $wpdb->get_results( $sql , ARRAY_A );
             foreach ($results_photo as $row_photo)
             {
-                $url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
-                $content .= '
-                  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
-                     style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
-                  </a>';
+				$url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
+			
+				if (strpos($row_photo['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
+					$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'"><img src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
+				}else{	  
+				              
+					$content .= '
+					  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
+						 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
+					  </a>';
+				 }
             }
             
             $content .= '</div></div>';
@@ -823,11 +855,16 @@ class iHerbarium {
         $texte_licence .= 'This picture is associated to <a href='.get_bloginfo('wpurl').'/observation/data/'.$results[0]['id_obs'].'> this observation</a><br>';
        
         $content = $this->getHeaderHTML();
-        $content .= $texte_licence.'
-        <br>
-        <a href="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" border=0>
+		if (strpos($results[0]['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
+				$content .= $texte_licence.'
+				<br>'; // ici afficher le bloc video
+		}else{
+				$content .= $texte_licence.'
+				<br>
+				<a href="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" border=0>
         		<img src="'.$this->domaine_photo.'/medias/big/'.$results[0]['nom_photo_final'].'" >
         	</a>';
+		}
         $content .= $this->getFooterHTML();
         return $content;
     }

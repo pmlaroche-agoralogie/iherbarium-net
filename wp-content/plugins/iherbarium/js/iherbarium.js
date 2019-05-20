@@ -27,7 +27,7 @@ jQuery(function ($) {
         url: url,
         dataType: 'json',
         autoUpload: false,
-        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+        acceptFileTypes: /(\.|\/)(gif|jpe?g|png|mp4)$/i,
         //maxFileSize: 999000,
         // Enable image resizing, except for Android and Opera,
         // which actually support image resizing, but fail to
