@@ -6,7 +6,7 @@
 		<span class="important">Récolteur</span> : <?php echo $authorRecolt;?><br>
 		<span class="important">Date de récolte</span> : <?php echo $row['original_timestamp'];?><br>
 		<span class="important">Localisation</span> : <?php echo $position;?><br>
-		<span class="important">Notes</span> : <?php echo $row['commentaires'];?><br><br>
+		<span class="important">Notes</span> : <?php echo utf8_decode($row['commentaires']);?><br><br>
 		
 		<span class="important">Numéro de référence récolteur</span> : <br>
 		<span class="important">Adresse</span> :  <?php echo $row['address'];?><br><br>

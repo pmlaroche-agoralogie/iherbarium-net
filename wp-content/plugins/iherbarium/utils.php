@@ -99,6 +99,10 @@ function date_prise_de_vue_exif($exif){
     return $dateprisevue;
 }
 
+function get_date_fr($date_depot){
+	$date_fr = substr($date_depot,8,2).'/'.substr($date_depot,5,2).'/'.substr($date_depot,0,4);
+    return $date_fr;
+}
 
 /* Fonction qui permet de redimensionner l'image que l'utilisateur nous a envoyé */
 function redimensionner_image($image_source,$taillemax,$image_destination){

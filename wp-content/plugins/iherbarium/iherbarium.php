@@ -93,6 +93,7 @@ class iHerbarium {
                 $limit = $atts['limit'];
             else
                 $limit = 0;
+				
            $content .= $this->getCarteHTML($longitude,$latitude,$radius,$limit);
         }
          
@@ -364,6 +365,7 @@ class iHerbarium {
         //CARTE
         if ($wp_query->get('ihaction') == "getcarte") 
         {
+				//echo "limit:".$wp_query->get('limit');
             echo $this->getPageCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
             exit;
 
@@ -681,11 +683,14 @@ class iHerbarium {
 				$content .= '<p><a href="/login/" class="btn_open">Connectez-vous si vous désirez donnez un nom commun ou scientifique</a></p>';
 			}
 
-        $content .= 'Commentaires : '.utf8_decode($results[0]['commentaires']).'<br><br>';
-        $content .= 'Adresse de récolte : '.$results[0]['address'].'<br><br>';
-        $content .= '<br>';
-        $content .= 'Cette observation a été déposée le '.$results[0]['date_depot'].' par l\'utilisateur : 
-<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($results[0]['id_user']).'/">'.$this->getDisplayNamebyID($results[0]['id_user']).'</a><br>';
+        $content .= '<strong>Commentaires : </strong>'.utf8_decode($results[0]['commentaires']).'<br><br>';
+		if (trim($results[0]['address']) != '[OSM]'){
+	        $content .= '<strong>Adresse de récolte : </strong>'.$results[0]['address'].'<br><br>';
+		}else{
+	        $content .= '<strong>Adresse de récolte : </strong><br><br>';
+		}
+        $content .= 'Cette observation a été déposée le '.get_date_fr($results[0]['date_depot']).' par l\'utilisateur : 
+<a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($results[0]['id_user']).'/">'.$this->getDisplayNamebyID($results[0]['id_user']).'</a><br><br>';
        
 		$content .= 'Voici les informations constituant cette observation : <br>';
 		$sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$idObs;
@@ -734,14 +739,14 @@ class iHerbarium {
             <br/>
             <br/>';
      		$radius = '0.04';
-     		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/">Carte</a>';
+     		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/limit/100/">Carte des observations proches de celle-ci</a>';
      		$content .= "<br><br>";
         }
 		
 		//details photos
 		$content.= $this->getDetailsObsHTML($idObs);
 		
-		$content.= " UUID de l'observation: ".$results[0]["uuid_observation"]."<br><br>";
+		$content.= "<strong>UUID de l'observation : </strong>".$results[0]["uuid_observation"]."<br><br>";
         
 		
 		if($results[0]["latitude"]!=0 && $results[0]["longitude"]!=0){
@@ -790,10 +795,22 @@ class iHerbarium {
         {
             //TODO: fonction get user affichage
             $content .= '<div class="fiche_liste">';
-            $content .= '<div class="header"><h2>Déposé le : '.$row['date_depot'].',<br>par l\'utilisateur : <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($row['id_user']).'/">'.$this->getDisplayNamebyID($row['id_user']).'</a></h2></div>';
-            $content .= '<div class="contenu">Cliquez sur une image pour voir le détail.<br>';
-            
-            
+            $content .= '<div class="header"><h2>Déposé le : '.get_date_fr($row['date_depot']).',<br>par l\'utilisateur : <a href="'.get_bloginfo('wpurl').'/utilisateur/'.$this->getUUIDbyID($row['id_user']).'/">'.$this->getDisplayNamebyID($row['id_user']).'</a></h2></div>';
+              
+			// on récupère la dernière détermination pour l'afficher au dessus des images
+			$libelle_determination = '';
+			$sql = "SELECT * FROM iherba_determination WHERE id_obs = ".$row['idobs']." ORDER BY date desc LIMIT 1";
+            $results_determination = $wpdb->get_results( $sql , ARRAY_A );
+			if(sizeof($results_determination)>0){
+				if ($results_determination[0]['nom_commun'] != ''){
+					$libelle_determination .= $results_determination[0]['nom_commun'].'<br>';
+				}
+				$libelle_determination .= $results_determination[0]['nom_scientifique'].', '.$results_determination[0]['genre'].', '.$results_determination[0]['famille'].'<br>';
+			}
+			
+			$content .= '<div class="contenu">'.$libelle_determination.'<br>';
+			 
+			             
             $sql = "SELECT * FROM iherba_photos WHERE id_obs = ".$row['idobs']." LIMIT 0,3";
             $results_photo = $wpdb->get_results( $sql , ARRAY_A );
             foreach ($results_photo as $row_photo)
@@ -801,12 +818,12 @@ class iHerbarium {
 				$url = ($row['url_rewriting_fr']!=''?$row['url_rewriting_fr'].'-'.$row['idobs']:$row['idobs']);
 			
 				if (strpos($row_photo['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
-					$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'"><img style="margin:0;" src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
+					$content .= '<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" title="Cliquez pour voir le détail" alt="Cliquez pour voir le détail" ><img style="margin:0;" src="/wp-content/plugins/iherbarium/img/icone_video.png" /></a>';
 				}else{	  
 				              
 					$content .= '
 					  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" 
-						 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
+						 style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')" title="Cliquez pour voir le détail" alt="Cliquez pour voir le détail">
 					  </a>';
 				 }
             }
@@ -852,7 +869,7 @@ class iHerbarium {
         }
 
         $texte_licence .= '';
-        $texte_licence .= 'This picture is associated to <a href='.get_bloginfo('wpurl').'/observation/data/'.$results[0]['id_obs'].'> this observation</a><br>';
+        $texte_licence .= 'Cette image est associée à <a href='.get_bloginfo('wpurl').'/observation/data/'.$results[0]['id_obs'].'> cette observation</a><br>';
        
         $content = $this->getHeaderHTML();
 		if (strpos($results[0]['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
@@ -881,7 +898,7 @@ class iHerbarium {
         $finligne = "<br/>";
         
         $sql = "SELECT iherba_determination.id,iherba_determination.id_user , tropicosid, tropicosgenusid, tropicosfamilyid,
-                        nom_commun,nom_scientifique,date, famille,genre ,id_cases,tag_for_translation,
+                        nom_commun,nom_scientifique,scientificname_html,date, famille,genre ,id_cases,tag_for_translation,
                         iherba_determination_cases.$champscomment ,iherba_certitude_level.value as certitude_level,
                         iherba_certitude_level.comment AS certitude_comment, iherba_determination.comment,
                         iherba_precision_level.value AS precision_level,
@@ -912,14 +929,13 @@ class iHerbarium {
         foreach ($results as $row)
         {
             
-            list( $jour,$mois, $annee,) = explode("-", $row["date"]);
-            $content.= $jour."-".$mois."-".$annee;
+            $content.= '<em>'.get_date_fr($row["date"])."</em><br>";
             
             if($row["nom_commun"]!=""){
-                $content.= " nom commun : " .$row["nom_commun"]. " ";
+                $content.= "<strong>Nom commun : </strong>" .$row["nom_commun"]."<br>";
             }
             if($row["nom_scientifique"]!=""){
-                $content.= " nom scientifique : " .$row["nom_scientifique"]. " ";
+                $content.= "<strong>Nom scientifique : </strong>" .$row["nom_scientifique"]. "";
                 $nom_scientifique = "nom scientifique : " .$row["nom_scientifique"]. " ";
             }
             if($row["genre"]!=""){
@@ -985,16 +1001,16 @@ class iHerbarium {
         }
         
         if($row["id_cases"]!=0){
-            $content.= $finligne;
-            $content.= "Note :";
+           // $content.= $finligne;
+           // $content.= "Note :";
             
            /*TODO: extraire*/
            // $content.= get_string_language_sql('expertise_legend_case_'.$row["tag_for_translation"].$finchamps,$mylanguage);
         }
         if($row["comment"]!=""){
             $content.= $finligne;
-            $content.= "Note :";
-            $content.=$row_determination["comment"];
+            $content.= "<strong>Note : </strong>";
+            $content.=$row["comment"];
         }
         
        /* if($texteseul!=2)
@@ -1110,8 +1126,11 @@ class iHerbarium {
         $row2 = $results2[0];//print_r($row2);
         
         $nom_commun=$row2["nom_commun"];
-        $nom_scientifique=$row2["nom_scientifique"];
-        
+		if ($row2['scientificname_html'] != '' && $row2['scientificname_html'] != '<em></em>'){
+	        $nom_scientifique=$row2["scientificname_html"];
+		}else{
+	        $nom_scientifique='<em>'.$row2["nom_scientifique"].'</em>';
+        }
         $nameObs= $nom_scientifique ;
         if($nom_commun !='')$nameObs .= "(".$nom_commun. ") ";
         if ($nameObs == '')
