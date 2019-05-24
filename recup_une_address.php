@@ -31,6 +31,7 @@ function get_adress_from_loc($latitude,$longitude){
 var_dump($geopos);
 	if ($geopos != FALSE){
 		$json_data = json_decode($geopos, true);
+var_dump($json_data);
 		if (isset($json_data['address'])){
 			$array_address = $json_data['address'];
 		
@@ -46,6 +47,8 @@ var_dump($geopos);
 				$town = $town." [OSM]";
 			}
 		}
+	}else{
+		echo "<br>Localisation non trouvée";
 	}
 	
 	return $town;
@@ -53,7 +56,7 @@ var_dump($geopos);
 
 
 // on récupère les fiches qui ont une latitude et longitude mais qui n'ont pas d'adresse
-$requetesql = "SELECT idobs,latitude,longitude FROM iherba_observations WHERE latitude != '' && longitude != '' && (address = '' or address = ' [OSM]' or address = '[OSM]')";
+$requetesql = "SELECT idobs,latitude,longitude FROM iherba_observations WHERE idobs=7925";
 $resultat = mysqli_query($connect_db,$requetesql);	
 
 
@@ -63,17 +66,17 @@ while ($rangee = mysqli_fetch_assoc($resultat)) {
 
 	$address = get_adress_from_loc($rangee['latitude'],$rangee['longitude']);
 	
-	if ($address != ''){
+	echo "<br>Adresse trouvée : ".$address;
+	/*if ($address != ''){
 		// on enregistre l'adresse dans le champ correspondant
 		$requetesql_update = "UPDATE iherba_observations set address = '".mysqli_real_escape_string($connect_db,$address)."' WHERE idobs = ".$rangee['idobs'];
 		echo "<br>".$requetesql_update;
 		$resultat_update = mysqli_query($connect_db,$requetesql_update);
 		$nb++;
-	}
+	}*/
 
 	
 }
 
-echo "<br>Nombre d'observations modifi&eacute;es : ".$nb;	
 
 ?>
