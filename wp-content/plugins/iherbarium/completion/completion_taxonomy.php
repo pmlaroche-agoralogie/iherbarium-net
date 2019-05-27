@@ -31,7 +31,7 @@ if(strlen($partie)>3){
 	
 	$clause_where_en_plus = '';
 	if ($limite_france==1){
-		$clause_where_en_plus = " AND FR = 'P'";
+		$clause_where_en_plus = " AND (FR = 'P' || FR = 'I')";
 	}
 	
 	$sql = "SELECT DISTINCT NOM_COMPLET,CD_NOM FROM  `iherba_taxref12_es` WHERE `REGNE` = '".$regne."' AND (`LB_NOM1` LIKE '$partie%' OR `LB_NOM2` LIKE '$partie%')".$clause_where_en_plus." ORDER BY NOM_COMPLET";
