@@ -135,7 +135,7 @@ class iHerbarium {
             'observation/photo/large/(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto='.$wp_rewrite->preg_index(1),
             'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
             'choix-dune-etiquette/herbier-support(.*)' => 'index.php?herbier=1',
-            'carte/longitude/(.+)/latitude/(.+)/radius/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3),
+            'carte/longitude/(.+)/latitude/(.+)/radius/(.+)/limit/(.+)/' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3).'&limit='.$wp_rewrite->preg_index(4),
             'utilisateur/(.+)/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1).'&offset='.$wp_rewrite->preg_index(2),
             'utilisateur/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1),
             'observation/new' => 'index.php?ihaction=newobs',
@@ -159,6 +159,7 @@ class iHerbarium {
         $qvars[] = 'longitude';
         $qvars[] = 'latitude';
         $qvars[] = 'radius';
+        $qvars[] = 'limit';
         $qvars[] = 'iduser';
         $qvars[] = 'offset';
         return $qvars;
@@ -365,7 +366,6 @@ class iHerbarium {
         //CARTE
         if ($wp_query->get('ihaction') == "getcarte") 
         {
-				//echo "limit:".$wp_query->get('limit');
             echo $this->getPageCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
             exit;
 
