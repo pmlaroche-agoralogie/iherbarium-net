@@ -135,7 +135,8 @@ class iHerbarium {
             'observation/photo/large/(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto='.$wp_rewrite->preg_index(1),
             'scripts/large.php(.*)' => 'index.php?ihaction=getphoto&size=large&idphoto=old',
             'choix-dune-etiquette/herbier-support(.*)' => 'index.php?herbier=1',
-            'carte/longitude/(.+)/latitude/(.+)/radius/(.+)/limit/(.+)/' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3).'&limit='.$wp_rewrite->preg_index(4),
+		    'carte/longitude/(.+)/latitude/(.+)/species/(.+)/limit/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&species='.$wp_rewrite->preg_index(3).'&limit='.$wp_rewrite->preg_index(4),
+            'carte/longitude/(.+)/latitude/(.+)/radius/(.+)/limit/(.+)' => 'index.php?ihaction=getcarte&longitude='.$wp_rewrite->preg_index(1).'&latitude='.$wp_rewrite->preg_index(2).'&radius='.$wp_rewrite->preg_index(3).'&limit='.$wp_rewrite->preg_index(4),
             'utilisateur/(.+)/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1).'&offset='.$wp_rewrite->preg_index(2),
             'utilisateur/(.+)' => 'index.php?iduser='.$wp_rewrite->preg_index(1),
             'observation/new' => 'index.php?ihaction=newobs',
@@ -160,6 +161,7 @@ class iHerbarium {
         $qvars[] = 'latitude';
         $qvars[] = 'radius';
         $qvars[] = 'limit';
+        $qvars[] = 'species';
         $qvars[] = 'iduser';
         $qvars[] = 'offset';
         return $qvars;
@@ -320,6 +322,7 @@ class iHerbarium {
     
     
     function template_redirect_intercept() {
+	
         global $wp_query;
         global $wpdb;
 
@@ -365,8 +368,8 @@ class iHerbarium {
         
         //CARTE
         if ($wp_query->get('ihaction') == "getcarte") 
-        {
-            echo $this->getPageCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'));
+        {		
+            echo $this->getPageCarteHTML($wp_query->get('longitude'),$wp_query->get('latitude'),$wp_query->get('radius'),$wp_query->get('limit'),$wp_query->get('species'));
             exit;
 
         }
@@ -739,7 +742,9 @@ class iHerbarium {
             <br/>
             <br/>';
      		$radius = '0.04';
-     		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/limit/100/">Carte des observations proches de celle-ci</a>';
+
+     		$content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($results[0]['longitude'],4).'/latitude/'.round($results[0]['latitude'], 4).'/radius/'.$radius.'/limit/100">Carte des observations proches de celle-ci</a>';
+		
      		$content .= "<br><br>";
         }
 		
@@ -805,7 +810,9 @@ class iHerbarium {
 				if ($results_determination[0]['nom_commun'] != ''){
 					$libelle_determination .= $results_determination[0]['nom_commun'].'<br>';
 				}
-				$libelle_determination .= $results_determination[0]['nom_scientifique'].', '.$results_determination[0]['genre'].', '.$results_determination[0]['famille'].'<br>';
+				if ($results_determination[0]['nom_scientifique'] != ''){
+					$libelle_determination .= $results_determination[0]['nom_scientifique'].', '.$results_determination[0]['genre'].', '.$results_determination[0]['famille'].'<br>';
+				}
 			}
 			
 			$content .= '<div class="contenu">'.$libelle_determination.'<br>';
@@ -897,7 +904,7 @@ class iHerbarium {
         //if($texteseul==0){$finchamps ="_forweb"; $finligne = "<br/>";} else {$finchamps ="_formail";$finligne = " \n";}
         $finligne = "<br/>";
         
-        $sql = "SELECT iherba_determination.id,iherba_determination.id_user , tropicosid, tropicosgenusid, tropicosfamilyid,
+        $sql = "SELECT iherba_determination.id,iherba_determination.id_user, referentiel, tropicosid, tropicosgenusid, tropicosfamilyid,
                         nom_commun,nom_scientifique,scientificname_html,date, famille,genre ,id_cases,tag_for_translation,
                         iherba_determination_cases.$champscomment ,iherba_certitude_level.value as certitude_level,
                         iherba_certitude_level.comment AS certitude_comment, iherba_determination.comment,
@@ -921,8 +928,22 @@ class iHerbarium {
         global $wpdb;
         global $nom_scientifique;
         $nom_scientifique = '';
-        
+		
         $finligne = "<br>";
+		$longitude = 0;
+		$latitude = 0;
+				
+		// on récupère la longitude et latitude de l'observation (pour la carte)		
+		$sql = "SELECT longitude_exif as longitude,latitude_exif as latitude FROM iherba_photos WHERE id_obs = ".$idObs;
+        $results_photo = $wpdb->get_results( $sql , ARRAY_A );
+        foreach ($results_photo as $row){
+			if ($row['longitude'] != 0 && $row['latitude'] != 0){
+				$longitude = $row['longitude'];
+				$latitude = $row['latitude'];
+				break;
+			}
+		}
+
         $results = $this->getDeterminationArray($idObs);
         
         $content = "";
@@ -971,7 +992,7 @@ class iHerbarium {
                 
             //$content.='&nbsp;'.$lien_minus.$lien_plus;*/
             
-            $content.= $finligne;
+            //$content.= $finligne;
                 
            /* $sql = "SELECT * 
                         FROM iherba_determination_reaction 
@@ -998,6 +1019,10 @@ class iHerbarium {
                 }
                 $content.= " ) ";
             }*/
+			if ($longitude != 0 && $latitude != 0 && $row['referentiel'] != '' && $row['tropicosid'] != ''){
+		       $content .= '<a href="'.get_bloginfo('wpurl').'/carte/longitude/'.round($longitude,4).'/latitude/'.round($latitude, 4).'/species/'.$row['referentiel'].':'.$row['tropicosid'].'/limit/100">Carte des observations proches de celle-ci de la même espèce</a><br />';
+		   }
+ 
         }
         
         if($row["id_cases"]!=0){
@@ -1021,7 +1046,7 @@ class iHerbarium {
         
        /* $content.= $finligne;
         $content.= $finligne;*/
-        
+		
         return $content;
         
     }
@@ -1184,11 +1209,15 @@ class iHerbarium {
         return $output; 
     }
     
-    function getPageCarteHTML($longitude,$latitude,$radius)
+    function getPageCarteHTML($longitude,$latitude,$radius,$limit,$species='')
     {
         $content = $this->getHeaderHTML();
-        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius."</h1>";
-        $content .= $this->getCarteHTML($longitude,$latitude,$radius);
+		if ($species != ''){
+	        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / espèce ".$species." / limit ".$limit."</h1>";
+		}else{
+	        $content .= "<h1>Carte latitude ".$latitude." / longitude ".$longitude." / rayon ".$radius." / limit ".$limit."</h1>";
+		}
+        $content .= $this->getCarteHTML($longitude,$latitude,$radius,$limit,$species);
         $content .= $this->getFooterHTML();
         return $content;
     }
@@ -1227,7 +1256,10 @@ class iHerbarium {
     function getObsByZoneArray($longitude,$latitude,$radius,$limit)
     {
         global $wpdb;
+
         $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
+
+		
         $sql = "SELECT iherba_observations.idobs,
                     iherba_observations.longitude,
                     iherba_observations.latitude,
@@ -1249,6 +1281,39 @@ class iHerbarium {
         return $results;
     }
     
+	 function getObsBySpecies($longitude,$latitude,$species,$limit)
+    {
+        global $wpdb;
+
+		$tab_infos_species = explode(":", $species);
+		$radius = "2";
+		
+        $where_zone = $this->getWhereZoneSQL($longitude, $latitude, $radius);
+
+		
+        $sql = "SELECT DISTINCT iherba_observations.idobs,
+                    iherba_observations.longitude,
+                    iherba_observations.latitude,
+                    iherba_observations.commentaires,
+                    iherba_photos.nom_photo_final,
+                    iherba_observations.deposit_timestamp,
+                    iherba_observations.url_rewriting_fr,
+                    iherba_observations.url_rewriting_en
+                FROM iherba_photos,iherba_observations,iherba_determination
+                WHERE iherba_observations.latitude !=0
+                    AND iherba_determination.id_obs = iherba_observations.idobs
+					AND iherba_determination.referentiel = '".$tab_infos_species[0]."' AND iherba_determination.tropicosid = '".$tab_infos_species[1]."' 
+					AND iherba_observations.idobs=iherba_photos.id_obs
+                    AND iherba_observations.public='oui'
+                    AND ".$where_zone."
+                GROUP BY iherba_observations.idobs
+                ORDER BY iherba_observations.idobs DESC";
+        if ($limit)
+            $sql .= " LIMIT 0,".$limit.";";
+        $results = $wpdb->get_results( $sql, ARRAY_A );
+        return $results;
+    }
+	
     function getObsInventoryByZoneArray($longitude,$latitude,$radius,$limit,$offset=0)
     {
         global $wpdb;
@@ -1274,12 +1339,17 @@ class iHerbarium {
         return $results;
     }
 
-    
-    function getCarteHTML($longitude,$latitude,$radius,$limit)
+    function getCarteHTML($longitude,$latitude,$radius,$limit,$species='')
     {
-        $content = "";
-
-        $results = $this->getObsByZoneArray($longitude, $latitude, $radius,$limit);
+		
+	    $content = "";
+		if ($species != ''){
+	        $results = $this->getObsBySpecies($longitude, $latitude, $species, $limit);
+			$zoom = 17;
+		}else{
+	        $results = $this->getObsByZoneArray($longitude, $latitude, $radius, $limit);
+			$zoom = 13;
+		}
         if(sizeof($results)>0)
         {
             $content .= '
@@ -1290,7 +1360,7 @@ class iHerbarium {
                 var lon = '.$results[0]['longitude'].';
                     
                 // initialize map
-                map = L.map("mapDiv").setView(['.$latitude.', '.$longitude.'], 13);
+                map = L.map("mapDiv").setView(['.$latitude.', '.$longitude.'], '.$zoom.');
                     
                 // set map tiles source
                 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -1300,6 +1370,7 @@ class iHerbarium {
                     
                 // add markers to the map';
             $arrayMarker ="";
+
             foreach ($results as $donnees)
             {     
                 $nc = '';
@@ -1329,6 +1400,7 @@ class iHerbarium {
                 $content .= '
                     marker = L.marker(['.$donnees['latitude'].','.$donnees['longitude'].']).addTo(map).bindPopup("'.$description.'");';
                 $arrayMarker .='['.$donnees['latitude'].','.$donnees['longitude'].'],';
+
             }
             $content .='
                 map.fitBounds(['.$arrayMarker.']);';
