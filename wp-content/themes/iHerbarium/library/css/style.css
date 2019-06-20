@@ -1573,7 +1573,6 @@ header.site-header {background-color:#013b1b;z-index: 500;
 
 /** ETIQUETTE **/
 .etiquette{
-	margin:5px;
 	padding:5px;
 	font-family: 'courier';
     font-size: 12px;
@@ -1581,15 +1580,16 @@ header.site-header {background-color:#013b1b;z-index: 500;
     border: 3px double #bfc8ab;
     display:table;
     line-height: initial; }
-.etiquette div{display:table-cell;vertical-align: top;}
+.etiquettes_marges{padding:5px;}
+.etiquette div{display:table-cell;vertical-align: top;padding-right:10px;padding-left:8px;}
+.etiquette div.contenu{padding-top:10px;}
 .etiquette.compact{font-size: 11px;}
 .etiquette.compact img{width:70px;}
 .etiquette.classic img,.etiquette.complete img{width:100px;}
 .important {font-weight:bold}
 .etiquette.compact .important.title {font-size:12px}
 .etiquette.complete .famille {font-size:24px;text-align:center;display:block}
-.etiquette.complete .min-img{height:100px;width:100px;display: inline-block;background-size:cover;background-position:center center;
-	margin: 0 15px 0 0;border-radius:5px;}
+.etiquette.complete .min-img{height:100px;width:100px;border-radius:5px;display:table;}
 
 /*
 	if you checked out the link above:

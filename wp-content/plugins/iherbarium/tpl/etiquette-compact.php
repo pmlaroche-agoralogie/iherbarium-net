@@ -1,4 +1,5 @@
 <?php include ('header_light.php')?>
+<div class="etiquettes_marges"> 
 <div class="etiquette compact"> 
 		<div><img src="<?php echo $urlgoogle?>"></div>
 		<div>
@@ -8,5 +9,6 @@
 		Auteur détermination : <?php echo $authorDeterminObs;?> <br>
 		<span class="important">n&deg; <?php echo $row['idobs'];?></span>
 		</div>
+</div>
 </div>
 <?php include ('footer_light.php')?>

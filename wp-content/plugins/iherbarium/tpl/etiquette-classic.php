@@ -1,4 +1,5 @@
 <?php include ('header_light.php')?>
+<div class="etiquettes_marges"> 
 <div class="etiquette classic"> 
 		<div><img src="<?php echo $urlgoogle?>"></div>
 		<div>
@@ -13,6 +14,7 @@
 		<span class="important">UUID Specimen</span> :  <?php echo $row['uuid_specimen'];?><br/>
         <span class="important">UUID Observation</span> : <?php echo $row['uuid_observation'];?><br/>
 		</div>
+</div>
 </div>
 <?php include ('footer_light.php')?>
 

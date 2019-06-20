@@ -1177,9 +1177,10 @@ class iHerbarium {
             $results_photo = $wpdb->get_results( $sql , ARRAY_A );
             foreach ($results_photo as $row_photo)
             {
-                $imgs .= '<br>
+                /*$imgs .= '<br>
                   <div class="min-img" style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'\')">
-                  </div>';
+                  </div>';*/
+				  $imgs .= '<div class="min-img"><img src="'.$this->domaine_photo.'/medias/vignettes/'.$row_photo['nom_photo_final'].'" /></div>';
             }	  
         }
         
