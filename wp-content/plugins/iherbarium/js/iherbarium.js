@@ -28,7 +28,7 @@ jQuery(function ($) {
         dataType: 'json',
         autoUpload: false,
         acceptFileTypes: /(\.|\/)(gif|jpe?g|png|mp4)$/i,
-        //maxFileSize: 999000,
+        maxFileSize: 6000000,
         // Enable image resizing, except for Android and Opera,
         // which actually support image resizing, but fail to
         // send Blob objects via XHR requests:
@@ -37,6 +37,8 @@ jQuery(function ($) {
         previewMaxWidth: 100,
         previewMaxHeight: 100,
         previewCrop: true,
+        loadImageMaxFileSize:6000000,
+        loadVideoMaxFileSize:6000000,
         sequentialUploads: true,
         dropZone: $('#dropzone'),
     }).on('fileuploadadd', function (e, data) {

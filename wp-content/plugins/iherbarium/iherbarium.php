@@ -475,11 +475,10 @@ class iHerbarium {
                         $typo_id = $this->getIDbyUUID($user->data->user_login);
                         if (!$typo_id)
                         {
-                            echo 'create';
+                            //echo 'create';
                             $typo_id = $this->setIDbyUUID($user->data->user_login);
                             
                         }
-                        
                         if (!$typo_id)
                         {
                             $aStatus['status'] = 'error';
