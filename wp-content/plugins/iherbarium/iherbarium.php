@@ -685,7 +685,7 @@ class iHerbarium {
 				$content .= '<p><a href="/login/" class="btn_open">Connectez-vous si vous désirez donnez un nom commun ou scientifique</a></p>';
 			}
 
-        $content .= '<strong>Commentaires : </strong>'.utf8_decode($results[0]['commentaires']).'<br><br>';
+			$content .= '<strong>Commentaires : </strong>'.(mb_detect_encoding(utf8_decode($results[0]['commentaires']), 'UTF-8', true) == 'UTF-8'?utf8_decode($results[0]['commentaires']):$results[0]['commentaires']).'<br><br>';
 		if (trim($results[0]['address']) != '[OSM]'){
 	        $content .= '<strong>Adresse de récolte : </strong>'.$results[0]['address'].'<br><br>';
 		}else{
