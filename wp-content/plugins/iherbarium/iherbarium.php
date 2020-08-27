@@ -12,7 +12,7 @@
 include_once(plugin_dir_path( __FILE__ ).'utils.php');
 
 class iHerbarium {
-    public $domaine_photo = "http://medias.iherbarium.fr";
+    public $domaine_photo = "https://medias.iherbarium.fr";
     public $photo_dir = "medias/sources/";
     public $photo_dir_min = "medias/vignettes/";
     public $photo_dir_big = "medias/big/";
