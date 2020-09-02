@@ -3,7 +3,7 @@ include('../wp-load.php');
 
 echo "START ".date('Y m D H:i:s')."<br>\n";
 
-$sql = "SELECT idobs FROM iherba_observations WHERE public='oui'";
+$sql = "SELECT idobs, url_rewriting_fr, url_rewriting_en FROM iherba_observations WHERE public='oui'";
 $results = $wpdb->get_results( $sql , ARRAY_A );
 if (sizeof($results)==0)
 {
