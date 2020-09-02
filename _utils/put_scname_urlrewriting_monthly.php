@@ -21,19 +21,26 @@ function cleanForShortURL($toClean) {
     return strtr($toClean, $GLOBALS['normalizeChars']);
 }
 $update =1;
+
 	$sql_determ="
         SELECT idobs ,  iherba_determination.nom_scientifique,iherba_determination.nom_commun,tropicosid,tropicosgenusid,tropicosfamilyid
             FROM iherba_observations
             INNER JOIN iherba_determination ON iherba_observations.idobs =  iherba_determination.id_obs
 	 ORDER BY nom_scientifique ";
-	$result_determ= mysqli_query($wpdb,$sql_determ) or die ("Pb1");
-	while($row_quest= mysqli_fetch_assoc($result_determ) ){
+	$result_determ= $wpdb->get_results( $sql_determ , ARRAY_A );
+	if (sizeof($result_determ)==0)
+	{
+    	echo "Erreur dans la récupération des observations";
+    	die();
+	}
+	foreach ($result_determ as $row_quest){
 				if(($update==1)&&($row_quest['nom_scientifique'] !=''))
 				 {
 					$sqlmajurl = "UPDATE  `iherba_observations` SET  `url_rewriting_fr` =  '".cleanForShortURL($row_quest['nom_scientifique'])."' WHERE  `iherba_observations`.`idobs` =".$row_quest['idobs'];
-					$result_z= mysqli_query($wpdb,$sqlmajurl) or die ("Pb2");
+					$wpdb->query($sqlmajurl);
 					$sqlmajurl = "UPDATE  `iherba_observations` SET  `url_rewriting_en` =  '".cleanForShortURL($row_quest['nom_scientifique'])."' WHERE  `iherba_observations`.`idobs` =".$row_quest['idobs'];
-					$result_z= mysqli_query($wpdb,$sqlmajurl) or die ("Pb3");						
+					$wpdb->query($sqlmajurl);		
 				 }
 	}
+	echo "URL Rewriting bien synchronises";
 ?>
