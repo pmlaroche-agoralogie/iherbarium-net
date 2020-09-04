@@ -348,8 +348,7 @@ class iHerbarium {
         if ($wp_query->get('idobs')) {
             $amyid = explode('-',$wp_query->get('idobs'));
             $idObs = (int)$amyid[sizeof($amyid)-1];
-			
-			if ($_REQUEST['nom_commun'] != '' || $_REQUEST['nom_scientifique'] != ''){
+			if ((isset($_REQUEST['nom_commun']) && $_REQUEST['nom_commun'] != '') || (isset($_REQUEST['nom_scientifique']) && $_REQUEST['nom_scientifique'] != '')){
 				$ok = $this->setNamesObservation($idObs,$_REQUEST['nom_commun'],$_REQUEST['nom_scientifique']);
 			}
 			            
@@ -430,11 +429,9 @@ class iHerbarium {
             $sql = $wpdb->prepare("SELECT * FROM iherba_observations WHERE uuid_observation = %s",$_REQUEST['uuid_obs']);
             $results = $wpdb->get_results( $sql , ARRAY_A );
             
-
-            $url = $results[0][idobs];
-            
+            $url = return_url_amicale_from_idobs($results[0][idobs]);
            include ('tpl/header.php');
-           echo 'Merci pour votre soumission.<br> Vous pouvez la consulter  <a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$url.'" ">ici</a>';
+           echo 'Merci pour votre soumission.<br> Vous pouvez la consulter  <a class="min-img" href="'.$url.'" ">ici</a>';
            include ('tpl/footer.php');
 
             
@@ -458,7 +455,7 @@ class iHerbarium {
 
             foreach ($_FILES["files"]["error"] as $key => $error) 
             {
-                if ($_FILES['error'][$key])
+                if (isset($_FILES['error'][$key]) && $_FILES['error'][$key])
                 {
                     $aStatus['status'] = 'error';
                     $aStatus['file'] = array('error' => $phpFileUploadErrors[$file['error'][0]]);
@@ -535,11 +532,11 @@ class iHerbarium {
 								}
 							}
                             $sql=$wpdb->prepare("INSERT INTO iherba_photos (id_obs,latitude_exif,longitude_exif,nom_photo_initial,all_exif_fields,date_depot,DateTimeOriginal)
-                                        VALUES (%d,%f,%f,%s,%s,%s,%s)",$results[0][idobs],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'),date_prise_de_vue_exif($exif));
+                                        VALUES (%d,%f,%f,%s,%s,%s,%s)",$results[0]['idobs'],$latitude,$longitude,$_FILES['files']['name'][$key],json_encode($exif),date('Y-m-d'),date_prise_de_vue_exif($exif));
                             
                             $wpdb->query($sql);
                             $lastid = $wpdb->insert_id;
-                            $photo_name = "photo_".$lastid."_observation_".$results[0][idobs].".".pathinfo($_FILES['files']['name'][$key], PATHINFO_EXTENSION);
+                            $photo_name = "photo_".$lastid."_observation_".$results[0]['idobs'].".".pathinfo($_FILES['files']['name'][$key], PATHINFO_EXTENSION);
                             
                             //move photo
                             $tmp_name = $_FILES["files"]["tmp_name"][$key];
@@ -873,9 +870,9 @@ class iHerbarium {
             echo "Erreur dans la récupération de l'image";
             die();
         }
-
+        $url = return_url_amicale_from_idobs($results[0]['id_obs']);
         $texte_licence .= '';
-        $texte_licence .= 'Cette image est associée à <a href='.get_bloginfo('wpurl').'/observation/data/'.$results[0]['id_obs'].'> cette observation</a><br>';
+        $texte_licence .= 'Cette image est associée à <a href='.$url.'> cette observation</a><br>';
        
         $content = $this->getHeaderHTML();
 		if (strpos($results[0]['nom_photo_initial'],".mp4") !== false){ // si c'est une vidéo
@@ -1164,8 +1161,8 @@ class iHerbarium {
             $authorDeterminObs = $this->getDisplayNamebyID($row2['id_user']);
         if ( $row2['date'] != '')
             $authorDeterminObs .= " (".$row2['date'].") ";;
-        
-        $urlqrencode = get_bloginfo('wpurl')."/observation/data/".$idObs;
+        $url = return_url_amicale_from_idobs($idObs);
+        $urlqrencode = $url;
         $urlgoogle =  'http://chart.apis.google.com/chart?chs=420x420&cht=qr&chld=H&chl='.urlencode($urlqrencode);
         $position=convertSexa2coord($row["latitude"],$row["longitude"]);
         
@@ -1385,9 +1382,9 @@ class iHerbarium {
                         $ns = $donnees_nom['nom_scientifique'];
                     }
                 }
-
+                $url = return_url_amicale_from_idobs($donnees['idobs']);
                 $description = '<img src=\"'.$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'].'\" style=\"width:100px;border-radius:5px;\" /><br />';
-                $description .= '<p><a target=\"_blank\" href=\"'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'\">Observation numéro :  '.$donnees['idobs'].'</a><br />';
+                $description .= '<p><a target=\"_blank\" href=\"'.$url.'\">Observation numéro :  '.$donnees['idobs'].'</a><br />';
                 if ($nc != ''){
                     $description .= '<strong>'.$nc.'</strong><br />';
                 }
@@ -1429,22 +1426,22 @@ class iHerbarium {
             foreach ($results as $donnees)
             {   
                 $image=$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'];
-                if($donnees['famille']!=$current['famille'])
+                if(isset($donnees['famille']) && isset($current['famille']) && $donnees['famille']!=$current['famille'])
                 {
                     $content .= '<div class="h3">Famille : '.$donnees['famille'].'</div>';
                     $nbFamily++;
                 }
-                if($donnees['genre']!=$current['genre'])
+                if(isset($donnees['genre']) && isset($current['genre']) &&$donnees['genre']!=$current['genre'])
                 {
                     $content .= '<div class="h4">Genre : '.$donnees['genre'].'</div>';
                     $nbGenre++;
                 }
-                
-                    $content.='<a class="min-img" href="'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'"
+                $url = return_url_amicale_from_idobs($donnees['idobs']);
+                $content.='<a class="min-img" href="'.$url.'"
                     style="background-image:url(\''.$this->domaine_photo.'/medias/vignettes/'.$donnees['nom_photo_final'].'\')">
                         </a>';
                 $content.='
-                            <a href="'.get_bloginfo('wpurl').'/observation/data/'.$donnees['idobs'].'">'.
+                            <a href="'.$url.'">'.
                             ' '.$donnees['nom_commun']."/".$donnees['nom_scientifique']."</a>";
                         
                 $current['famille'] = $donnees['famille'];
