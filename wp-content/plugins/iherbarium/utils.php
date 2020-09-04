@@ -1,12 +1,14 @@
 <?php
 function return_url_amicale_from_idobs($idobs)
 {
+	global $wpdb;
+
 	$idobs = intval($idobs);
 	$sql = "SELECT idobs, url_rewriting_fr, url_rewriting_en FROM iherba_observations WHERE public='oui' AND idobs=$idobs";
-	$result = $wpdb->get_row($sql);
+	$result = $wpdb->get_row($sql, ARRAY_A);
 	$name_url_fr =  $result['url_rewriting_fr'];
 	$url = ($name_url_fr!=''?$name_url_fr.'-'.$result['idobs']:$result['idobs']);
-	$url_entiere = "get_bloginfo('wpurl').'/observation/data/'.$url";
+	$url_entiere = get_bloginfo('wpurl').'/observation/data/'.$url;
 	return $url_entiere;
 }
 
