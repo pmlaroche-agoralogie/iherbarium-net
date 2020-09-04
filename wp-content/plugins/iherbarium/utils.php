@@ -1,4 +1,15 @@
 <?php
+function return_url_amicale_from_idobs($idobs)
+{
+	$idobs = intval($idobs);
+	$sql = "SELECT idobs, url_rewriting_fr, url_rewriting_en FROM iherba_observations WHERE public='oui' AND idobs=$idobs";
+	$result = $wpdb->get_row($sql);
+	$name_url_fr =  $result['url_rewriting_fr'];
+	$url = ($name_url_fr!=''?$name_url_fr.'-'.$result['idobs']:$result['idobs']);
+	$url_entiere = "get_bloginfo('wpurl').'/observation/data/'.$url";
+	return $url_entiere;
+}
+
 function convertSexa1coord($var, $pos)
 { // D?cimal vers sexag?simal
     
