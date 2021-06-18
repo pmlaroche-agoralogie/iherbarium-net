@@ -125,9 +125,9 @@
             // The maximum file size of images to load:
             loadImageMaxFileSize: 10000000, // 10MB
             // The maximum width of resized images:
-            imageMaxWidth: 1920,
+            imageMaxWidth: 6000,
             // The maximum height of resized images:
-            imageMaxHeight: 1080,
+            imageMaxHeight: 6000,
             // Defines the image orientation (1-8) or takes the orientation
             // value from Exif data if set to true:
             imageOrientation: false,
